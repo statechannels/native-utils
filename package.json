@@ -5,7 +5,9 @@
   "author": "Andrew Stewart <andrew.gord.stewart@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@statechannels/nitro-protocol": "^0.3.6",
     "@statechannels/wallet-core": "^0.3.6",
+    "ethers": "^5.0.13",
     "neon-cli": "^0.3.3"
   },
   "scripts": {

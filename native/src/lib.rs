@@ -3,17 +3,17 @@ use neon_serde::export;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-struct User {
-  name: String,
-  age: u16,
+struct AllocationItem {
+  destination: String,
+  amount: String,
 }
 
-export! {
-    fn sayHello(name: String) -> String {
-        format!("Hello, {}!", name)
-    }
+type AllocationOutcome = Vec<AllocationItem>;
 
-    fn greet(user: User) -> String {
-        format!("{} is {} years old", user.name, user.age)
-    }
+export! {
+  fn logOutcome(outcome: AllocationOutcome) -> String {
+    println!("The first item is {:?}", outcome[0]);
+    format!("The outcome is {:?}", outcome)
+  }
+
 }

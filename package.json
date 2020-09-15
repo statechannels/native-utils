@@ -1,0 +1,16 @@
+{
+  "name": "encode-state",
+  "main": "index.js",
+  "version": "0.1.0",
+  "author": "Andrew Stewart <andrew.gord.stewart@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "neon-cli": "^0.3.3"
+  },
+  "scripts": {
+    "install": "neon build --release"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0"
+  }
+}

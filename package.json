@@ -1,6 +1,7 @@
 {
-  "name": "encode-state",
-  "main": "index.js",
+  "name": "@statechannels/native-utils",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "version": "0.1.0",
   "author": "Andrew Stewart <andrew.gord.stewart@gmail.com>",
   "license": "MIT",
@@ -8,14 +9,21 @@
     "@statechannels/nitro-protocol": "^0.3.6",
     "@statechannels/wallet-core": "^0.3.6",
     "ethers": "^5.0.13",
-    "lodash": "^4.17.20",
-    "neon-cli": "^0.3.3"
+    "lodash": "^4.17.20"
   },
   "scripts": {
-    "install": "neon build --release"
+    "prepare:native": "neon build --release",
+    "prepare": "yarn prepare:native",
+    "test": "jest",
+    "bench": "node bench/index.js"
   },
   "devDependencies": {
+    "benny": "^3.6.14",
     "eslint": "^6.8.0",
+    "jest": "^26.4.2",
+    "neon-cli": "^0.3.3",
+    "prettier": "^2.1.2",
+    "ts-jest": "^26.3.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.2"
   }

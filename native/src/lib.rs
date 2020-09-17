@@ -1,77 +1,30 @@
-use ethabi_next as ethabi;
-use neon::register_module;
-use neon_serde::export;
-use serde_derive::{Deserialize, Serialize};
-use serde_json;
+use neon::prelude::*;
+use neon_serde::*;
 
-#[derive(Serialize, Deserialize, Debug)]
-struct AllocationItem {
-  destination: String,
-  amount: String,
-}
+mod keccak;
+pub use keccak::keccak256;
 
-type AllocationOutcome = Vec<AllocationItem>;
-
-use ethabi_next::token::Token;
-
-// This should instead be the implementation of `into` on the `From` trait.
-fn outcome_as_token(outcome: &AllocationOutcome) -> ethabi::Token {
-  Token::Array(
-    outcome
-      .into_iter()
-      .map(|item| {
-        Token::Tuple(vec![
-          Token::FixedBytes(item.destination.as_str().into()),
-          Token::Uint(0.into()), // FIXME: This should be `item.amount.into()`
-        ])
-      })
-      .collect(),
-  )
-}
-
-#[derive(Debug)]
-enum Error {
-  Ethabi(ethabi::Error),
-}
-
-impl From<ethabi::Error> for Error {
-  fn from(err: ethabi::Error) -> Self {
-    Error::Ethabi(err)
-  }
-}
+mod types;
+use types::*;
 
 export! {
-  fn logOutcome(outcome: AllocationOutcome) -> String {
-    format!("The outcome is {:?}", outcome)
+  fn getChannelId(channel: Channel) -> String {
+    format!("0x{}", hex::encode(channel.id()))
   }
 
-  fn logSerializedOutcome(outcome: String) -> String {
-    let outcome: AllocationOutcome = serde_json::from_str(&outcome).unwrap();
-    format!("The outcome is {:?}", outcome)
+  fn encodeOutcome(state: State) -> String {
+    format!("0x{}", hex::encode( state.outcome.encode()))
   }
 
-  fn encodeOutcome(outcome: String) -> ethabi_next::Bytes {
-    let outcome: AllocationOutcome = serde_json::from_str(&outcome).unwrap();
-    ethabi_next::encode(&[outcome_as_token(&outcome)])
+  fn hashAppPart(state: State) -> String {
+    format!("0x{}", hex::encode( state.hash_app_part()))
+  }
+
+  fn hashOutcome(state: State) -> String {
+    format!("0x{}", hex::encode( state.outcome.hash()))
+  }
+
+  fn hashState(state: State) -> String {
+    format!("0x{}", hex::encode(state.hash()))
   }
 }
-
-// #[cfg(test)]
-// mod tests {
-//   use super::*;
-//   use std::str;
-
-//   #[test]
-//   fn encode_outcome() {
-//     let item = AllocationItem {
-//       amount: "0x".to_string(),
-//       destination: "0x".to_string(),
-//     };
-
-//     let outcome: AllocationOutcome = vec![item];
-//     let encoded = encodeOutcome(outcome);
-//     let expected = "0000000000000000000000001111111111111111111111111111111111111111";
-//     let received = str::from_utf8(&encoded);
-//     // assert_eq!(received.unwrap(), expected);
-//   }
-// }

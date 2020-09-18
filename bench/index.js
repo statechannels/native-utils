@@ -1,1 +1,2 @@
 require('./hashing')
+require('./signing')

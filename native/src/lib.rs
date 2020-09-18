@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use neon::prelude::*;
 use neon_serde::*;
 
@@ -26,5 +28,14 @@ export! {
 
   fn hashState(state: State) -> String {
     format!("0x{}", hex::encode(state.hash()))
+  }
+
+  fn signState(state: State, private_key: Bytes) -> StateSignature {
+    state.sign(private_key)
+  }
+
+  fn hashMessage(msg: Bytes) -> String {
+    let bytes = hash_message(&msg.deref());
+    format!("0x{}", hex::encode(bytes))
   }
 }

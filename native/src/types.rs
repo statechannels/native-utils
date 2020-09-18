@@ -1,7 +1,12 @@
+use std::convert::TryInto;
+use std::ops::Deref;
+
 use ethabi::{encode, Token};
 use ethereum_types::{Address, U256, U64};
 use hex;
+use secp256k1::{sign, Message, RecoveryId, SecretKey, Signature};
 use serde::de::*;
+use serde::ser::*;
 use serde_derive::*;
 
 use super::keccak256;
@@ -52,11 +57,52 @@ where
     })
 }
 
+fn serialize_signature<S>(
+    (signature, recovery_id): &(Signature, RecoveryId),
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    // A helper struct to go from `[u8; 64]` to `&[u8]` so that /`hex::encode`
+    // accepts it.
+    struct RawBytes64([u8; 64]);
+
+    impl AsRef<[u8]> for RawBytes64 {
+        fn as_ref(&self) -> &[u8] {
+            &self.0
+        }
+    }
+
+    let bytes = signature.serialize();
+    let s = hex::encode(RawBytes64(bytes));
+    serializer.serialize_str(format!("0x{}{:x}", s, recovery_id.serialize() + 27).as_str())
+}
+
+pub struct Bytes(Vec<u8>);
+
+impl Deref for Bytes {
+    type Target = Vec<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<'de> Deserialize<'de> for Bytes {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserialize_bytes_string(deserializer).map(Self)
+    }
+}
+
 trait Tokenize {
     fn tokenize(&self) -> Token;
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationItem {
     #[serde(deserialize_with = "deserialize_bytes_string")]
@@ -68,7 +114,7 @@ pub struct AllocationItem {
 impl Tokenize for AllocationItem {
     fn tokenize(&self) -> Token {
         Token::Tuple(vec![
-            Token::FixedBytes(self.destination.clone().into()),
+            Token::FixedBytes(self.destination.clone()),
             Token::Uint(self.amount),
         ])
     }
@@ -80,7 +126,7 @@ enum AssetOutcomeType {
     GuaranteeOutcomeType = 1,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationAssetOutcome {
     pub asset_holder_address: Address,
@@ -111,7 +157,7 @@ impl Tokenize for AllocationAssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Guarantee {
     #[serde(deserialize_with = "deserialize_bytes_string")]
@@ -140,7 +186,7 @@ impl Tokenize for Guarantee {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GuaranteeAssetOutcome {
     pub asset_holder_address: Address,
@@ -162,7 +208,7 @@ impl Tokenize for GuaranteeAssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum AssetOutcome {
     AllocationAssetOutcome(AllocationAssetOutcome),
@@ -190,7 +236,7 @@ impl Tokenize for AssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct Outcome(Vec<AssetOutcome>);
 
@@ -210,7 +256,7 @@ impl Tokenize for Outcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Channel {
     #[serde(deserialize_with = "deserialize_u256_string")]
@@ -239,7 +285,7 @@ impl Channel {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct State {
     #[serde(deserialize_with = "deserialize_u64")]
@@ -278,4 +324,35 @@ impl State {
             .as_slice(),
         )
     }
+
+    pub fn sign(self, private_key: Bytes) -> StateSignature {
+        let hash = self.hash().into();
+        let hashed_message = hash_message(&hash);
+        let message = Message::parse(&hashed_message);
+        let secret_key = SecretKey::parse_slice(private_key.deref()).expect("invalid private key");
+        let (mut signature, recovery_id) = sign(&message, &secret_key);
+
+        signature.normalize_s();
+
+        StateSignature {
+            hash: hash.into(),
+            signature: (signature, recovery_id),
+        }
+    }
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StateSignature {
+    // #[serde(serialize_with = "serialize_bytes_string")]
+    hash: Vec<u8>,
+    #[serde(serialize_with = "serialize_signature")]
+    signature: (Signature, RecoveryId),
+}
+
+pub fn hash_message(msg: &Vec<u8>) -> [u8; 32] {
+    const PREFIX: &str = "\x19Ethereum Signed Message:\n";
+    let mut eth_msg = format!("{}{}", PREFIX, msg.len()).into_bytes();
+    eth_msg.extend_from_slice(msg.as_slice());
+    keccak256(&eth_msg)
 }

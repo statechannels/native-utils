@@ -18,6 +18,7 @@
     "bench": "node bench/index.js"
   },
   "devDependencies": {
+    "@statechannels/server-wallet": "^0.3.6",
     "benny": "^3.6.14",
     "eslint": "^6.8.0",
     "jest": "^26.4.2",

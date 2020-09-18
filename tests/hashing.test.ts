@@ -164,7 +164,7 @@ describe('encodeOutcome', () => {
   })
 
   // FIXME: Something is wrong with the deserialization of (probably) the destinations
-  test.skip('Single guarantee outcome', () => {
+  test('Single guarantee outcome', () => {
     const state = {
       ...DEFAULT_STATE,
       outcome: [

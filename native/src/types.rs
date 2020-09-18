@@ -39,6 +39,19 @@ where
     hex::decode(unprefixed).map_err(D::Error::custom)
 }
 
+fn deserialize_bytes_strings<'de, D>(deserializer: D) -> Result<Vec<Vec<u8>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let strings: Vec<String> = Deserialize::deserialize(deserializer)?;
+    strings.into_iter().try_fold(vec![], |mut acc, s| {
+        let unprefixed = s.trim_start_matches("0x");
+        let bytes = hex::decode(unprefixed).map_err(D::Error::custom)?;
+        acc.push(bytes);
+        Ok(acc)
+    })
+}
+
 trait Tokenize {
     fn tokenize(&self) -> Token;
 }
@@ -101,8 +114,10 @@ impl Tokenize for AllocationAssetOutcome {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Guarantee {
-    pub target_channel_id: [u8; 32],
-    pub destinations: Vec<[u8; 32]>,
+    #[serde(deserialize_with = "deserialize_bytes_string")]
+    pub target_channel_id: Vec<u8>,
+    #[serde(deserialize_with = "deserialize_bytes_strings")]
+    pub destinations: Vec<Vec<u8>>,
 }
 
 impl Guarantee {

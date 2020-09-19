@@ -14,7 +14,7 @@
   "scripts": {
     "prepare:native": "neon build --release",
     "prepare": "yarn prepare:native",
-    "test": "jest",
+    "test": "jest --verbose",
     "bench": "node bench/index.js"
   },
   "devDependencies": {

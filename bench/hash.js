@@ -27,17 +27,18 @@ const DEFAULT_STATE = {
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
 }
 
-benny.suite(
-  'State hashing',
+module.exports = () =>
+  benny.suite(
+    'State hashing',
 
-  benny.add('hashState (js)', () => {
-    jsHashState(DEFAULT_STATE)
-  }),
+    benny.add('hashState (js)', () => {
+      jsHashState(DEFAULT_STATE)
+    }),
 
-  benny.add('hashState (native)', () => {
-    hashState(DEFAULT_STATE)
-  }),
+    benny.add('hashState (native)', () => {
+      hashState(DEFAULT_STATE)
+    }),
 
-  benny.cycle(),
-  benny.complete(),
-)
+    benny.cycle(),
+    benny.complete(),
+  )

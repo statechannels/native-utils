@@ -9,8 +9,11 @@ export interface StateWithHashAndSignature {
 export function getChannelId(channel: Channel): string
 
 export function encodeOutcome(state: State): string
+
 export function hashAppPart(state: State): string
-export function hashMessage(msg: String): String
+export function hashMessage(msg: string): string
 export function hashOutcome(state: State): string
 export function hashState(state: State): string
-export function signState(state: State, privateKey: String): StateWithHashAndSignature
+
+export function signState(state: State, privateKey: string): StateWithHashAndSignature
+export function recoverAddress(state: State, signature: string): string

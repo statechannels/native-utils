@@ -56,25 +56,26 @@ const WALLET_CORE_DEFAULT_STATE = {
   appDefinition: DEFAULT_STATE.appDefinition,
 }
 
-benny.suite(
-  'State signing',
+module.exports = () =>
+  benny.suite(
+    'State signing',
 
-  benny.add('fastSignState (wasm)', async () => {
-    await fastSignState(
-      {
-        ...WALLET_CORE_DEFAULT_STATE,
-        // We include the hashing here, because `signState` does it internally;
-        // it wouldn't be fair to hash the state once outside this benchmark
-        stateHash: hashState(DEFAULT_STATE),
-      },
-      PRIVATE_KEY,
-    )
-  }),
+    benny.add('fastSignState (wasm)', async () => {
+      await fastSignState(
+        {
+          ...WALLET_CORE_DEFAULT_STATE,
+          // We include the hashing here, because `signState` does it internally;
+          // it wouldn't be fair to hash the state once outside this benchmark
+          stateHash: hashState(DEFAULT_STATE),
+        },
+        PRIVATE_KEY,
+      )
+    }),
 
-  benny.add('signState (native)', () => {
-    signState(DEFAULT_STATE, PRIVATE_KEY)
-  }),
+    benny.add('signState (native)', () => {
+      signState(DEFAULT_STATE, PRIVATE_KEY)
+    }),
 
-  benny.cycle(),
-  benny.complete(),
-)
+    benny.cycle(),
+    benny.complete(),
+  )

@@ -1,83 +1,14 @@
-use std::convert::TryInto;
 use std::ops::Deref;
 
 use ethabi::{encode, Token};
 use ethereum_types::{Address, U256, U64};
-use hex;
-use secp256k1::{sign, Message, RecoveryId, SecretKey, Signature};
+use secp256k1::{recover, sign, Message, PublicKey, RecoveryId, SecretKey, Signature};
 use serde::de::*;
 use serde::ser::*;
 use serde_derive::*;
 
 use super::keccak256;
-
-fn deserialize_u64<'de, D>(deserializer: D) -> Result<U64, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let n: u64 = Deserialize::deserialize(deserializer)?;
-    Ok(U64::from(n))
-}
-
-fn deserialize_u256_number<'de, D>(deserializer: D) -> Result<U256, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let n: u64 = Deserialize::deserialize(deserializer)?;
-    Ok(U256::from(n))
-}
-
-fn deserialize_u256_string<'de, D>(deserializer: D) -> Result<U256, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let s: String = Deserialize::deserialize(deserializer)?;
-    U256::from_dec_str(s.as_str()).map_err(D::Error::custom)
-}
-
-fn deserialize_bytes_string<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let prefixed: String = Deserialize::deserialize(deserializer)?;
-    let unprefixed = prefixed.trim_start_matches("0x");
-    hex::decode(unprefixed).map_err(D::Error::custom)
-}
-
-fn deserialize_bytes_strings<'de, D>(deserializer: D) -> Result<Vec<Vec<u8>>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let strings: Vec<String> = Deserialize::deserialize(deserializer)?;
-    strings.into_iter().try_fold(vec![], |mut acc, s| {
-        let unprefixed = s.trim_start_matches("0x");
-        let bytes = hex::decode(unprefixed).map_err(D::Error::custom)?;
-        acc.push(bytes);
-        Ok(acc)
-    })
-}
-
-fn serialize_signature<S>(
-    (signature, recovery_id): &(Signature, RecoveryId),
-    serializer: S,
-) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    // A helper struct to go from `[u8; 64]` to `&[u8]` so that /`hex::encode`
-    // accepts it.
-    struct RawBytes64([u8; 64]);
-
-    impl AsRef<[u8]> for RawBytes64 {
-        fn as_ref(&self) -> &[u8] {
-            &self.0
-        }
-    }
-
-    let bytes = signature.serialize();
-    let s = hex::encode(RawBytes64(bytes));
-    serializer.serialize_str(format!("0x{}{:x}", s, recovery_id.serialize() + 27).as_str())
-}
+use super::serde::*;
 
 pub struct Bytes(Vec<u8>);
 
@@ -89,6 +20,15 @@ impl Deref for Bytes {
     }
 }
 
+impl Serialize for Bytes {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serialize_bytes_string(self.deref(), serializer)
+    }
+}
+
 impl<'de> Deserialize<'de> for Bytes {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -96,6 +36,38 @@ impl<'de> Deserialize<'de> for Bytes {
     {
         deserialize_bytes_string(deserializer).map(Self)
     }
+}
+
+fn public_key_to_address(public_key: PublicKey) -> Vec<u8> {
+    let uncompressed = public_key.serialize();
+    debug_assert_eq!(uncompressed[0], 0x04);
+    let hash = keccak256(&uncompressed[1..]);
+    hash[12..].into()
+}
+
+fn checksum_address(address: Vec<u8>) -> String {
+    let s = hex::encode(&address);
+    let unchecksummed = s.as_bytes();
+    let hash = keccak256(unchecksummed);
+
+    let mut result = String::with_capacity(42);
+    result.push('0');
+    result.push('x');
+    result.extend(unchecksummed.into_iter().enumerate().map(|(i, c)| {
+        let mut hash_byte = hash[i / 2];
+        if i % 2 == 0 {
+            hash_byte = hash_byte >> 4;
+        } else {
+            hash_byte = hash_byte & 0xf;
+        }
+        if *c > 57 && hash_byte > 7 {
+            char::from(c - 32)
+        } else {
+            char::from(*c)
+        }
+    }));
+
+    result
 }
 
 trait Tokenize {
@@ -339,12 +311,26 @@ impl State {
             signature: (signature, recovery_id),
         }
     }
+
+    pub fn recover_address(self, signature: Bytes) -> String {
+        let hash = self.hash().into();
+        let hashed_message = hash_message(&hash);
+        let message = Message::parse(&hashed_message);
+        let parsed_signature = Signature::parse_slice(&signature[0..signature.len() - 1])
+            .expect("invalid signature length");
+        let recovery_id =
+            RecoveryId::parse_rpc(signature[signature.len() - 1]).expect("invalid recovery ID");
+        let public_key = recover(&message, &parsed_signature, &recovery_id)
+            .expect("failed to recover signature");
+
+        checksum_address(public_key_to_address(public_key))
+    }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StateSignature {
-    // #[serde(serialize_with = "serialize_bytes_string")]
+    #[serde(serialize_with = "serialize_bytes_string")]
     hash: Vec<u8>,
     #[serde(serialize_with = "serialize_signature")]
     signature: (Signature, RecoveryId),

@@ -6,6 +6,9 @@ use neon_serde::*;
 mod keccak;
 pub use keccak::keccak256;
 
+mod serde;
+pub use crate::serde::*;
+
 mod types;
 use types::*;
 
@@ -30,12 +33,16 @@ export! {
     format!("0x{}", hex::encode(state.hash()))
   }
 
+  fn hashMessage(msg: Bytes) -> String {
+    let bytes = hash_message(&msg.deref());
+    format!("0x{}", hex::encode(bytes))
+  }
+
   fn signState(state: State, private_key: Bytes) -> StateSignature {
     state.sign(private_key)
   }
 
-  fn hashMessage(msg: Bytes) -> String {
-    let bytes = hash_message(&msg.deref());
-    format!("0x{}", hex::encode(bytes))
+  fn recoverAddress(state: State, signature: Bytes) -> String {
+    state.recover_address(signature)
   }
 }

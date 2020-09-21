@@ -40,11 +40,11 @@ export! {
     Bytes32::from(hash_message(&msg.deref())).to_hex_string()
   }
 
-  fn signState(state: State, private_key: Bytes) -> StateSignature {
+  fn signState(state: State, private_key: Bytes) -> Result<StateSignature, String> {
     state.sign(private_key)
   }
 
-  fn recoverAddress(state: State, signature: Bytes) -> String {
+  fn recoverAddress(state: State, signature: Bytes) -> Result<String, String> {
     state.recover_address(signature)
   }
 }

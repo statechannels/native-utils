@@ -133,4 +133,9 @@ describe('Sign state', () => {
 
     expect(newSignature).toStrictEqual(oldSignature)
   })
+
+  test('Catches invalid private key', async () => {
+    // Invalid signature length
+    expect(() => signState(DEFAULT_STATE, '0x00')).toThrow('invalid private key')
+  })
 })

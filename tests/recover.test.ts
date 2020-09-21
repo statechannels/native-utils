@@ -89,4 +89,25 @@ describe('Recover address', () => {
 
     expect(newAddress).toStrictEqual(oldAddress)
   })
+
+  test('Catches invalid signatures', async () => {
+    // Invalid signature length
+    expect(() => recoverAddress(DEFAULT_STATE, '0x00')).toThrow(
+      'invalid signature length',
+    )
+
+    // Signature with invalid recovery ID
+    expect(() =>
+      recoverAddress(
+        DEFAULT_STATE,
+        '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      ),
+    ).toThrow('invalid recovery ID')
+
+    // Altogether invalid signature
+    const signedState = signState(DEFAULT_STATE, PRIVATE_KEY)
+    expect(() =>
+      recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(3)}`),
+    ).toThrow('invalid signature')
+  })
 })

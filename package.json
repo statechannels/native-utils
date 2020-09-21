@@ -12,8 +12,9 @@
     "lodash": "^4.17.20"
   },
   "scripts": {
-    "build": "neon build --release",
-    "install": "npm run build",
+    "build:native": "neon build --release",
+    "build:wasm": "cd wasm && wasm-pack build --target nodejs",
+    "install": "npm run build:native && npm run build:wasm",
     "test": "jest --verbose",
     "bench": "node bench/index.js"
   },

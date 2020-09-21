@@ -1,9 +1,8 @@
 const benny = require('benny')
-const {
-  fastSignState,
-} = require('@statechannels/server-wallet/lib/src/utilities/signatures')
-const { signState } = require('../lib')
-const { hashState } = require('@statechannels/nitro-protocol')
+const serverWallet = require('@statechannels/server-wallet/lib/src/utilities/signatures')
+const nitro = require('@statechannels/nitro-protocol')
+const native = require('../lib')
+const wasm = require('../wasm/pkg')
 
 const PRIVATE_KEY = '0x1111111111111111111111111111111111111111111111111111111111111111'
 
@@ -60,20 +59,24 @@ module.exports = () =>
   benny.suite(
     'State signing',
 
-    benny.add('fastSignState (wasm)', async () => {
-      await fastSignState(
+    benny.add('fastSignState (nitro, wasm)', async () => {
+      await serverWallet.fastSignState(
         {
           ...WALLET_CORE_DEFAULT_STATE,
           // We include the hashing here, because `signState` does it internally;
           // it wouldn't be fair to hash the state once outside this benchmark
-          stateHash: hashState(DEFAULT_STATE),
+          stateHash: nitro.hashState(DEFAULT_STATE),
         },
         PRIVATE_KEY,
       )
     }),
 
     benny.add('signState (native)', () => {
-      signState(DEFAULT_STATE, PRIVATE_KEY)
+      native.signState(DEFAULT_STATE, PRIVATE_KEY)
+    }),
+
+    benny.add('signState (wasm)', () => {
+      wasm.signState(DEFAULT_STATE, PRIVATE_KEY)
     }),
 
     benny.cycle(),

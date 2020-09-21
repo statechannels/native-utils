@@ -1,6 +1,7 @@
 const benny = require('benny')
-const { hashState: jsHashState } = require('@statechannels/nitro-protocol')
-const { hashState } = require('../lib')
+const nitro = require('@statechannels/nitro-protocol')
+const native = require('../lib')
+const wasm = require('../wasm/pkg')
 
 const DEFAULT_STATE = {
   turnNum: 1,
@@ -32,11 +33,15 @@ module.exports = () =>
     'State hashing',
 
     benny.add('hashState (js)', () => {
-      jsHashState(DEFAULT_STATE)
+      nitro.hashState(DEFAULT_STATE)
     }),
 
     benny.add('hashState (native)', () => {
-      hashState(DEFAULT_STATE)
+      native.hashState(DEFAULT_STATE)
+    }),
+
+    benny.add('hashState (wasm)', () => {
+      wasm.hashState(DEFAULT_STATE)
     }),
 
     benny.cycle(),

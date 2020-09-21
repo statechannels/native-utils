@@ -1,20 +1,10 @@
-import {
-  getChannelId as jsGetChannelId,
-  encodeOutcome as jsEncodeOutcome,
-  hashAppPart as jsHashAppPart,
-  hashOutcome as jsHashOutcome,
-  hashState as jsHashState,
-  State,
-} from '@statechannels/nitro-protocol'
-import {
-  hashState,
-  getChannelId,
-  hashAppPart,
-  hashOutcome,
-  encodeOutcome,
-} from '../lib/index'
+process.argv.push('--experimental-modules', '--experimental-wasm-modules')
 
-const DEFAULT_STATE: State = {
+import * as nitro from '@statechannels/nitro-protocol'
+import * as native from '../lib/index'
+import * as wasm from '../wasm/pkg/statechannels_wasm_utils'
+
+const DEFAULT_STATE: nitro.State = {
   turnNum: 1,
   isFinal: false,
   channel: {
@@ -35,7 +25,9 @@ describe('getChannelId', () => {
       channelNonce: 2,
       participants: [],
     }
-    expect(getChannelId(channel)).toStrictEqual(jsGetChannelId(channel))
+
+    expect(native.getChannelId(channel)).toStrictEqual(nitro.getChannelId(channel))
+    expect(wasm.getChannelId(channel)).toStrictEqual(nitro.getChannelId(channel))
   })
 
   test('Different nonces', () => {
@@ -44,16 +36,19 @@ describe('getChannelId', () => {
       channelNonce: 1,
       participants: [],
     }
-    expect(getChannelId(channel1)).toStrictEqual(jsGetChannelId(channel1))
-
     const channel2 = {
       chainId: '1',
       channelNonce: 2,
       participants: [],
     }
-    expect(getChannelId(channel2)).toStrictEqual(jsGetChannelId(channel2))
 
-    expect(getChannelId(channel1)).not.toStrictEqual(getChannelId(channel2))
+    expect(native.getChannelId(channel1)).toStrictEqual(nitro.getChannelId(channel1))
+    expect(native.getChannelId(channel2)).toStrictEqual(nitro.getChannelId(channel2))
+    expect(native.getChannelId(channel1)).not.toStrictEqual(nitro.getChannelId(channel2))
+
+    expect(wasm.getChannelId(channel1)).toStrictEqual(nitro.getChannelId(channel1))
+    expect(wasm.getChannelId(channel2)).toStrictEqual(nitro.getChannelId(channel2))
+    expect(wasm.getChannelId(channel1)).not.toStrictEqual(nitro.getChannelId(channel2))
   })
 
   test('Different chain IDs', () => {
@@ -62,16 +57,20 @@ describe('getChannelId', () => {
       channelNonce: 1,
       participants: [],
     }
-    expect(getChannelId(channel1)).toStrictEqual(jsGetChannelId(channel1))
 
     const channel2 = {
       chainId: '4',
       channelNonce: 1,
       participants: [],
     }
-    expect(getChannelId(channel2)).toStrictEqual(jsGetChannelId(channel2))
 
-    expect(getChannelId(channel1)).not.toStrictEqual(getChannelId(channel2))
+    expect(native.getChannelId(channel1)).toStrictEqual(nitro.getChannelId(channel1))
+    expect(native.getChannelId(channel2)).toStrictEqual(nitro.getChannelId(channel2))
+    expect(native.getChannelId(channel1)).not.toStrictEqual(nitro.getChannelId(channel2))
+
+    expect(wasm.getChannelId(channel1)).toStrictEqual(nitro.getChannelId(channel1))
+    expect(wasm.getChannelId(channel2)).toStrictEqual(nitro.getChannelId(channel2))
+    expect(wasm.getChannelId(channel1)).not.toStrictEqual(nitro.getChannelId(channel2))
   })
 })
 
@@ -82,16 +81,19 @@ describe('hashAppPart', () => {
       appDefinition: '0x0000000000000000000000000000000000000000',
       appData: '0x00',
     }
-    expect(hashAppPart(state1)).toStrictEqual(jsHashAppPart(state1))
-
     const state2 = {
       ...DEFAULT_STATE,
       appDefinition: '0x1111111111111111111111111111111111111111',
       appData: '0x00',
     }
-    expect(hashAppPart(state2)).toStrictEqual(jsHashAppPart(state2))
 
-    expect(hashAppPart(state1)).not.toStrictEqual(hashAppPart(state2))
+    expect(native.hashAppPart(state1)).toStrictEqual(nitro.hashAppPart(state1))
+    expect(native.hashAppPart(state2)).toStrictEqual(nitro.hashAppPart(state2))
+    expect(native.hashAppPart(state1)).not.toStrictEqual(native.hashAppPart(state2))
+
+    expect(wasm.hashAppPart(state1)).toStrictEqual(nitro.hashAppPart(state1))
+    expect(wasm.hashAppPart(state2)).toStrictEqual(nitro.hashAppPart(state2))
+    expect(wasm.hashAppPart(state1)).not.toStrictEqual(native.hashAppPart(state2))
   })
 
   test('Different app datas', () => {
@@ -100,23 +102,23 @@ describe('hashAppPart', () => {
       appDefinition: '0x0000000000000000000000000000000000000000',
       appData: '0x00',
     }
-    expect(hashAppPart(state1)).toStrictEqual(jsHashAppPart(state1))
 
     const state2 = {
       ...DEFAULT_STATE,
       appDefinition: '0x0000000000000000000000000000000000000000',
       appData: '0x01',
     }
-    expect(hashAppPart(state2)).toStrictEqual(jsHashAppPart(state2))
 
-    expect(hashAppPart(state1)).not.toStrictEqual(hashAppPart(state2))
+    expect(native.hashAppPart(state1)).toStrictEqual(nitro.hashAppPart(state1))
+    expect(native.hashAppPart(state2)).toStrictEqual(nitro.hashAppPart(state2))
+    expect(native.hashAppPart(state1)).not.toStrictEqual(native.hashAppPart(state2))
   })
 })
 
 describe('encodeOutcome', () => {
   test('Empty outcome', () => {
-    expect(encodeOutcome(DEFAULT_STATE)).toStrictEqual(
-      jsEncodeOutcome(DEFAULT_STATE.outcome),
+    expect(native.encodeOutcome(DEFAULT_STATE)).toStrictEqual(
+      nitro.encodeOutcome(DEFAULT_STATE.outcome),
     )
   })
 
@@ -136,7 +138,7 @@ describe('encodeOutcome', () => {
         },
       ],
     }
-    expect(encodeOutcome(state)).toStrictEqual(jsEncodeOutcome(state.outcome))
+    expect(native.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
   })
 
   test('Single allocation asset outcome and two allocation items', () => {
@@ -160,10 +162,9 @@ describe('encodeOutcome', () => {
         },
       ],
     }
-    expect(encodeOutcome(state)).toStrictEqual(jsEncodeOutcome(state.outcome))
+    expect(native.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
   })
 
-  // FIXME: Something is wrong with the deserialization of (probably) the destinations
   test('Single guarantee outcome', () => {
     const state = {
       ...DEFAULT_STATE,
@@ -181,13 +182,15 @@ describe('encodeOutcome', () => {
         },
       ],
     }
-    expect(encodeOutcome(state)).toStrictEqual(jsEncodeOutcome(state.outcome))
+    expect(native.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
   })
 })
 
 describe('hashOutcome', () => {
   test('Empty outcome', () => {
-    expect(hashOutcome(DEFAULT_STATE)).toStrictEqual(jsHashOutcome(DEFAULT_STATE.outcome))
+    expect(native.hashOutcome(DEFAULT_STATE)).toStrictEqual(
+      nitro.hashOutcome(DEFAULT_STATE.outcome),
+    )
   })
 
   test('Single allocation asset outcome and allocation item', () => {
@@ -206,7 +209,7 @@ describe('hashOutcome', () => {
         },
       ],
     }
-    expect(hashOutcome(state)).toStrictEqual(jsHashOutcome(state.outcome))
+    expect(native.hashOutcome(state)).toStrictEqual(nitro.hashOutcome(state.outcome))
   })
 
   test('Single allocation asset outcome and two allocation items', () => {
@@ -230,12 +233,12 @@ describe('hashOutcome', () => {
         },
       ],
     }
-    expect(hashOutcome(state)).toStrictEqual(jsHashOutcome(state.outcome))
+    expect(native.hashOutcome(state)).toStrictEqual(nitro.hashOutcome(state.outcome))
   })
 })
 
 describe('hashState', () => {
   test('Simple state', () => {
-    expect(hashState(DEFAULT_STATE)).toStrictEqual(jsHashState(DEFAULT_STATE))
+    expect(native.hashState(DEFAULT_STATE)).toStrictEqual(nitro.hashState(DEFAULT_STATE))
   })
 })

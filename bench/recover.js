@@ -1,10 +1,8 @@
 const benny = require('benny')
-const {
-  fastSignState,
-  fastRecoverAddress,
-} = require('@statechannels/server-wallet/lib/src/utilities/signatures')
-const { signState, recoverAddress } = require('../lib')
-const { hashState } = require('@statechannels/nitro-protocol')
+const serverWallet = require('@statechannels/server-wallet/lib/src/utilities/signatures')
+const native = require('../lib')
+const nitro = require('@statechannels/nitro-protocol')
+const wasm = require('../wasm/pkg')
 
 const PRIVATE_KEY = '0x1111111111111111111111111111111111111111111111111111111111111111'
 
@@ -58,9 +56,9 @@ const WALLET_CORE_DEFAULT_STATE = {
 }
 
 module.exports = async () => {
-  const stateHash = hashState(DEFAULT_STATE)
+  const stateHash = nitro.hashState(DEFAULT_STATE)
 
-  const oldSignedState = await fastSignState(
+  const oldSignedState = await serverWallet.fastSignState(
     {
       ...WALLET_CORE_DEFAULT_STATE,
       stateHash,
@@ -68,21 +66,29 @@ module.exports = async () => {
     PRIVATE_KEY,
   )
 
-  const newSignedState = signState(DEFAULT_STATE, PRIVATE_KEY)
+  const newSignedState = native.signState(DEFAULT_STATE, PRIVATE_KEY)
 
   return benny.suite(
     'Recover address',
 
-    benny.add('fastRecoverAddress (wasm)', async () => {
+    benny.add('fastRecoverAddress (nitro, wasm)', async () => {
       // We include the hashing here again, because `recoverAddress` does it internally;
       // it wouldn't be fair to hash the state outside this benchmark
-      const stateHash = hashState(DEFAULT_STATE)
+      const stateHash = nitro.hashState(DEFAULT_STATE)
 
-      fastRecoverAddress(WALLET_CORE_DEFAULT_STATE, oldSignedState.signature, stateHash)
+      serverWallet.fastRecoverAddress(
+        WALLET_CORE_DEFAULT_STATE,
+        oldSignedState.signature,
+        stateHash,
+      )
     }),
 
     benny.add('recoverAddress (native)', () => {
-      recoverAddress(newSignedState.state, newSignedState.signature)
+      native.recoverAddress(newSignedState.state, newSignedState.signature)
+    }),
+
+    benny.add('recoverAddress (wasm)', () => {
+      wasm.recoverAddress(newSignedState.state, newSignedState.signature)
     }),
 
     benny.cycle(),

@@ -190,12 +190,12 @@ impl State {
         .into()
     }
 
-    pub fn sign(self, private_key: Bytes) -> Result<StateSignature, String> {
+    pub fn sign(self, private_key: Bytes) -> Result<StateSignature, &'static str> {
         let hash = self.hash();
         let hashed_message = hash_message(&hash);
         let message = Message::parse(&hashed_message);
-        let secret_key = SecretKey::parse_slice(private_key.deref())
-            .or_else(|_| format!("invalid private key"))?;
+        let secret_key =
+            SecretKey::parse_slice(private_key.deref()).or_else(|_| Err("invalid private key"))?;
         let (mut signature, recovery_id) = sign(&message, &secret_key);
 
         signature.normalize_s();
@@ -206,16 +206,16 @@ impl State {
         })
     }
 
-    pub fn recover_address(self, signature: Bytes) -> Result<String, String> {
+    pub fn recover_address(self, signature: Bytes) -> Result<String, &'static str> {
         let hash = self.hash();
         let hashed_message = hash_message(&hash);
         let message = Message::parse(&hashed_message);
         let parsed_signature = Signature::parse_slice(&signature[0..signature.len() - 1])
-            .or_else(|_| Err(format!("invalid signature length")))?;
+            .or_else(|_| Err("invalid signature length"))?;
         let recovery_id = RecoveryId::parse_rpc(signature[signature.len() - 1])
-            .or_else(|_| Err(format!("invalid recovery ID")))?;
+            .or_else(|_| Err("invalid recovery ID"))?;
         let public_key = recover(&message, &parsed_signature, &recovery_id)
-            .or_else(|_| Err(format!("invalid signature")))?;
+            .or_else(|_| Err("invalid signature"))?;
 
         Ok(checksum_address(public_key_to_address(public_key)))
     }

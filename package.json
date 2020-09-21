@@ -12,8 +12,8 @@
     "lodash": "^4.17.20"
   },
   "scripts": {
-    "prepare:native": "neon build --release",
-    "prepare": "yarn prepare:native",
+    "build": "neon build --release",
+    "install": "npm run build",
     "test": "jest --verbose",
     "bench": "node bench/index.js"
   },

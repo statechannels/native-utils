@@ -3,39 +3,41 @@ use std::ops::Deref;
 use neon::prelude::*;
 use neon_serde::*;
 
-mod keccak;
-pub use keccak::keccak256;
-
+mod encode;
 mod serde;
-pub use crate::serde::*;
-
+mod state;
+mod tokenize;
 mod types;
+mod utils;
+
+use encode::*;
+use state::*;
 use types::*;
+use utils::*;
 
 export! {
   fn getChannelId(channel: Channel) -> String {
-    format!("0x{}", hex::encode(channel.id()))
+    channel.id().to_hex_string()
   }
 
   fn encodeOutcome(state: State) -> String {
-    format!("0x{}", hex::encode( state.outcome.encode()))
+    state.outcome.encode().to_hex_string()
   }
 
   fn hashAppPart(state: State) -> String {
-    format!("0x{}", hex::encode( state.hash_app_part()))
+    state.hash_app_part().to_hex_string()
   }
 
   fn hashOutcome(state: State) -> String {
-    format!("0x{}", hex::encode( state.outcome.hash()))
+    state.outcome.hash().to_hex_string()
   }
 
   fn hashState(state: State) -> String {
-    format!("0x{}", hex::encode(state.hash()))
+    state.hash().to_hex_string()
   }
 
   fn hashMessage(msg: Bytes) -> String {
-    let bytes = hash_message(&msg.deref());
-    format!("0x{}", hex::encode(bytes))
+    Bytes32::from(hash_message(&msg.deref())).to_hex_string()
   }
 
   fn signState(state: State, private_key: Bytes) -> StateSignature {

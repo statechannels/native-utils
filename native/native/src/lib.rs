@@ -3,17 +3,7 @@ use std::ops::Deref;
 use neon::prelude::*;
 use neon_serde::*;
 
-mod encode;
-mod serde;
-mod state;
-mod tokenize;
-mod types;
-mod utils;
-
-use encode::*;
-use state::*;
-use types::*;
-use utils::*;
+use statechannels_native_utils_common::prelude::*;
 
 export! {
   fn getChannelId(channel: Channel) -> String {

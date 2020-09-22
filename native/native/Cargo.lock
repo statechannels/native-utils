@@ -407,22 +407,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "neon-serde-example"
-version = "0.1.0"
-dependencies = [
- "ethabi",
- "ethereum-types",
- "hex",
- "libsecp256k1",
- "neon",
- "neon-build 0.3.3",
- "neon-serde",
- "serde",
- "serde_derive",
- "tiny-keccak 2.0.2",
-]
-
-[[package]]
 name = "neon-sys"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -705,6 +689,29 @@ dependencies = [
  "digest",
  "fake-simd",
  "opaque-debug",
+]
+
+[[package]]
+name = "statechannels-native-utils"
+version = "0.1.0"
+dependencies = [
+ "neon",
+ "neon-build 0.3.3",
+ "neon-serde",
+ "statechannels-native-utils-common",
+]
+
+[[package]]
+name = "statechannels-native-utils-common"
+version = "0.1.0"
+dependencies = [
+ "ethabi",
+ "ethereum-types",
+ "hex",
+ "libsecp256k1",
+ "serde",
+ "serde_derive",
+ "tiny-keccak 2.0.2",
 ]
 
 [[package]]

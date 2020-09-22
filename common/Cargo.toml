@@ -1,0 +1,13 @@
+[package]
+name = "statechannels-native-utils-common"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+ethereum-types = "0.9"
+ethabi = { git = "https://github.com/graphprotocol/ethabi", rev = "fe7cab5" }
+hex = "0.4"
+libsecp256k1 = "0.3"
+serde_derive = "1.0"
+serde = "1.0"
+tiny-keccak = "2.0"

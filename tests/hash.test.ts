@@ -1,8 +1,8 @@
 process.argv.push('--experimental-modules', '--experimental-wasm-modules')
 
 import * as nitro from '@statechannels/nitro-protocol'
-import * as native from '../lib/index'
-import * as wasm from '../wasm/pkg/statechannels_wasm_utils'
+import * as native from '../native/lib'
+import * as wasm from '../wasm/pkg'
 
 const DEFAULT_STATE: nitro.State = {
   turnNum: 1,
@@ -93,7 +93,7 @@ describe('hashAppPart', () => {
 
     expect(wasm.hashAppPart(state1)).toStrictEqual(nitro.hashAppPart(state1))
     expect(wasm.hashAppPart(state2)).toStrictEqual(nitro.hashAppPart(state2))
-    expect(wasm.hashAppPart(state1)).not.toStrictEqual(native.hashAppPart(state2))
+    expect(wasm.hashAppPart(state1)).not.toStrictEqual(wasm.hashAppPart(state2))
   })
 
   test('Different app datas', () => {
@@ -112,6 +112,10 @@ describe('hashAppPart', () => {
     expect(native.hashAppPart(state1)).toStrictEqual(nitro.hashAppPart(state1))
     expect(native.hashAppPart(state2)).toStrictEqual(nitro.hashAppPart(state2))
     expect(native.hashAppPart(state1)).not.toStrictEqual(native.hashAppPart(state2))
+
+    expect(wasm.hashAppPart(state1)).toStrictEqual(nitro.hashAppPart(state1))
+    expect(wasm.hashAppPart(state2)).toStrictEqual(nitro.hashAppPart(state2))
+    expect(wasm.hashAppPart(state1)).not.toStrictEqual(wasm.hashAppPart(state2))
   })
 })
 
@@ -139,6 +143,7 @@ describe('encodeOutcome', () => {
       ],
     }
     expect(native.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
+    expect(wasm.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
   })
 
   test('Single allocation asset outcome and two allocation items', () => {
@@ -163,6 +168,7 @@ describe('encodeOutcome', () => {
       ],
     }
     expect(native.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
+    expect(wasm.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
   })
 
   test('Single guarantee outcome', () => {
@@ -183,6 +189,7 @@ describe('encodeOutcome', () => {
       ],
     }
     expect(native.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
+    expect(wasm.encodeOutcome(state)).toStrictEqual(nitro.encodeOutcome(state.outcome))
   })
 })
 
@@ -210,6 +217,7 @@ describe('hashOutcome', () => {
       ],
     }
     expect(native.hashOutcome(state)).toStrictEqual(nitro.hashOutcome(state.outcome))
+    expect(wasm.hashOutcome(state)).toStrictEqual(nitro.hashOutcome(state.outcome))
   })
 
   test('Single allocation asset outcome and two allocation items', () => {
@@ -234,11 +242,13 @@ describe('hashOutcome', () => {
       ],
     }
     expect(native.hashOutcome(state)).toStrictEqual(nitro.hashOutcome(state.outcome))
+    expect(wasm.hashOutcome(state)).toStrictEqual(nitro.hashOutcome(state.outcome))
   })
 })
 
 describe('hashState', () => {
   test('Simple state', () => {
     expect(native.hashState(DEFAULT_STATE)).toStrictEqual(nitro.hashState(DEFAULT_STATE))
+    expect(wasm.hashState(DEFAULT_STATE)).toStrictEqual(nitro.hashState(DEFAULT_STATE))
   })
 })

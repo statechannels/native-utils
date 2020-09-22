@@ -1,14 +1,14 @@
+import { utils } from 'ethers'
+import { arrayify } from 'ethers/lib/utils'
 import { State } from '@statechannels/nitro-protocol'
 import {
   Destination,
   State as WalletCoreState,
   Uint256,
 } from '@statechannels/wallet-core'
-import { fastSignState } from '@statechannels/server-wallet/lib/src/utilities/signatures'
-import { hashState, signState } from '../lib/index'
-import { hashMessage } from '../lib'
-import { utils } from 'ethers'
-import { arrayify, concat, keccak256, toUtf8Bytes } from 'ethers/lib/utils'
+import * as serverWallet from '@statechannels/server-wallet/lib/src/utilities/signatures'
+import * as native from '../native/lib'
+import * as wasm from '../wasm/pkg'
 
 const DEFAULT_STATE: State = {
   turnNum: 1,
@@ -43,12 +43,14 @@ const PRIVATE_KEY = '0x111111111111111111111111111111111111111111111111111111111
 
 describe('Hash message', () => {
   test('Hash a message', async () => {
-    const hash = hashState(DEFAULT_STATE)
+    const hash = native.hashState(DEFAULT_STATE)
 
-    const newHashedMessage = hashMessage(hash)
     const oldHashedMessage = utils.hashMessage(arrayify(hash))
+    const nativeHashedMessage = native.hashMessage(hash)
+    const wasmHashedMessage = wasm.hashMessage(hash)
 
-    expect(newHashedMessage).toStrictEqual(oldHashedMessage)
+    expect(nativeHashedMessage).toStrictEqual(oldHashedMessage)
+    expect(wasmHashedMessage).toStrictEqual(oldHashedMessage)
   })
 })
 
@@ -67,13 +69,11 @@ describe('Sign state', () => {
       },
     ]
 
-    // New
     const state = {
       ...DEFAULT_STATE,
       outcome,
     }
-    const stateHash = hashState(state)
-    const newSignature = signState(state, PRIVATE_KEY).signature
+    const stateHash = native.hashState(state)
 
     // Old
     const walletCoreState: WalletCoreState = {
@@ -88,10 +88,17 @@ describe('Sign state', () => {
       },
     }
     const oldSignature = (
-      await fastSignState({ ...walletCoreState, stateHash }, PRIVATE_KEY)
+      await serverWallet.fastSignState({ ...walletCoreState, stateHash }, PRIVATE_KEY)
     ).signature
 
-    expect(newSignature).toStrictEqual(oldSignature)
+    // Native
+    const nativeSignature = native.signState(state, PRIVATE_KEY).signature
+
+    // WASM
+    const wasmSignature = wasm.signState(state, PRIVATE_KEY).signature
+
+    expect(nativeSignature).toStrictEqual(oldSignature)
+    expect(wasmSignature).toStrictEqual(oldSignature)
   })
 
   test('State with guarantee outcome', async () => {
@@ -109,13 +116,11 @@ describe('Sign state', () => {
       },
     ]
 
-    // New
     const state = {
       ...DEFAULT_STATE,
       outcome,
     }
-    const stateHash = hashState(state)
-    const newSignature = signState(state, PRIVATE_KEY).signature
+    const stateHash = native.hashState(state)
 
     // Old
     const walletCoreState: WalletCoreState = {
@@ -128,14 +133,22 @@ describe('Sign state', () => {
       },
     }
     const oldSignature = (
-      await fastSignState({ ...walletCoreState, stateHash }, PRIVATE_KEY)
+      await serverWallet.fastSignState({ ...walletCoreState, stateHash }, PRIVATE_KEY)
     ).signature
 
-    expect(newSignature).toStrictEqual(oldSignature)
+    // Native
+    const nativeSignature = native.signState(state, PRIVATE_KEY).signature
+
+    // WASM
+    const wasmSignature = wasm.signState(state, PRIVATE_KEY).signature
+
+    expect(nativeSignature).toStrictEqual(oldSignature)
+    expect(wasmSignature).toStrictEqual(oldSignature)
   })
 
   test('Catches invalid private key', async () => {
     // Invalid signature length
-    expect(() => signState(DEFAULT_STATE, '0x00')).toThrow('invalid private key')
+    expect(() => native.signState(DEFAULT_STATE, '0x00')).toThrow('invalid private key')
+    expect(() => wasm.signState(DEFAULT_STATE, '0x00')).toThrow('invalid private key')
   })
 })

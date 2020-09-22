@@ -1,4 +1,3 @@
-const { utils } = require('ethers')
 const {
   getChannelId,
 

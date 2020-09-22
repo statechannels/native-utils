@@ -1,6 +1,6 @@
 const benny = require('benny')
 const nitro = require('@statechannels/nitro-protocol')
-const native = require('../lib')
+const native = require('../native')
 const wasm = require('../wasm/pkg')
 
 const DEFAULT_STATE = {

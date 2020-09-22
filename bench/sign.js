@@ -1,7 +1,7 @@
 const benny = require('benny')
 const serverWallet = require('@statechannels/server-wallet/lib/src/utilities/signatures')
 const nitro = require('@statechannels/nitro-protocol')
-const native = require('../lib')
+const native = require('../native')
 const wasm = require('../wasm/pkg')
 
 const PRIVATE_KEY = '0x1111111111111111111111111111111111111111111111111111111111111111'

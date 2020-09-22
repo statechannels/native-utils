@@ -6,13 +6,10 @@
   "author": "Jannis Pohlmann <jannis@thegraph.com>",
   "license": "MIT",
   "dependencies": {
-    "@statechannels/nitro-protocol": "^0.3.6",
-    "@statechannels/wallet-core": "^0.3.6",
-    "ethers": "^5.0.13",
-    "lodash": "^4.17.20"
+    "@statechannels/nitro-protocol": "^0.3.6"
   },
   "scripts": {
-    "build:native": "neon build --release",
+    "build:native": "cd native && yarn build",
     "build:wasm": "cd wasm && wasm-pack build --target nodejs",
     "install": "npm run build:native && npm run build:wasm",
     "test": "jest --verbose",
@@ -23,7 +20,6 @@
     "benny": "^3.6.14",
     "eslint": "^6.8.0",
     "jest": "^26.4.2",
-    "neon-cli": "^0.3.3",
     "prettier": "^2.1.2",
     "ts-jest": "^26.3.0",
     "ts-node": "^9.0.0",

@@ -4,14 +4,9 @@ import {
   State as WalletCoreState,
   Uint256,
 } from '@statechannels/wallet-core'
-import {
-  fastRecoverAddress,
-  fastSignState,
-} from '@statechannels/server-wallet/lib/src/utilities/signatures'
-import { hashState, recoverAddress, signState } from '../lib/index'
-import { hashMessage } from '../lib'
-import { utils } from 'ethers'
-import { arrayify, concat, keccak256, toUtf8Bytes } from 'ethers/lib/utils'
+import * as serverWallet from '@statechannels/server-wallet/lib/src/utilities/signatures'
+import * as native from '../native/lib'
+import * as wasm from '../wasm/pkg'
 
 const DEFAULT_STATE: State = {
   turnNum: 1,
@@ -66,48 +61,64 @@ const PRIVATE_KEY = '0x111111111111111111111111111111111111111111111111111111111
 
 describe('Recover address', () => {
   test('Recover from signed state', async () => {
-    const newSignedState = signState(DEFAULT_STATE, PRIVATE_KEY)
+    const signedState = native.signState(DEFAULT_STATE, PRIVATE_KEY)
 
     // This is needed so that secp256k1 is properly initialized in
     // https://github.com/statechannels/statechannels/blob/master/packages/server-wallet/src/utilities/signatures.ts#L54
     //
     // This initialization is missing in `fastRecoverAddress` at the moment.
-    const oldSignedState = await fastSignState(
-      { ...DEFAULT_WALLET_CORE_STATE, stateHash: newSignedState.hash },
+    const oldSignedState = await serverWallet.fastSignState(
+      { ...DEFAULT_WALLET_CORE_STATE, stateHash: signedState.hash },
       PRIVATE_KEY,
     )
 
     // Old
-    const oldAddress = fastRecoverAddress(
+    const oldAddress = serverWallet.fastRecoverAddress(
       DEFAULT_WALLET_CORE_STATE,
-      newSignedState.signature,
-      newSignedState.hash,
+      signedState.signature,
+      signedState.hash,
     )
 
-    // New
-    const newAddress = recoverAddress(DEFAULT_STATE, newSignedState.signature)
+    // Native
+    const nativeAddress = native.recoverAddress(DEFAULT_STATE, signedState.signature)
 
-    expect(newAddress).toStrictEqual(oldAddress)
+    // WASM
+    const wasmAddress = wasm.recoverAddress(DEFAULT_STATE, signedState.signature)
+
+    expect(nativeAddress).toStrictEqual(oldAddress)
+    expect(wasmAddress).toStrictEqual(oldAddress)
   })
 
   test('Catches invalid signatures', async () => {
     // Invalid signature length
-    expect(() => recoverAddress(DEFAULT_STATE, '0x00')).toThrow(
+    expect(() => native.recoverAddress(DEFAULT_STATE, '0x00')).toThrow(
+      'invalid signature length',
+    )
+    expect(() => wasm.recoverAddress(DEFAULT_STATE, '0x00')).toThrow(
       'invalid signature length',
     )
 
     // Signature with invalid recovery ID
     expect(() =>
-      recoverAddress(
+      native.recoverAddress(
+        DEFAULT_STATE,
+        '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      ),
+    ).toThrow('invalid recovery ID')
+    expect(() =>
+      wasm.recoverAddress(
         DEFAULT_STATE,
         '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
       ),
     ).toThrow('invalid recovery ID')
 
     // Altogether invalid signature
-    const signedState = signState(DEFAULT_STATE, PRIVATE_KEY)
+    const signedState = native.signState(DEFAULT_STATE, PRIVATE_KEY)
     expect(() =>
-      recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(3)}`),
+      native.recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(3)}`),
+    ).toThrow('invalid signature')
+    expect(() =>
+      wasm.recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(3)}`),
     ).toThrow('invalid signature')
   })
 })

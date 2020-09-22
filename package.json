@@ -10,6 +10,7 @@
     "bootstrap:wasm-utils": "cd wasm-utils && yarn",
     "bootstrap": "yarn bootstrap:wasm-utils && lerna bootstrap",
     "prepare": "lerna run prepare",
+    "publish": "lerna publish",
     "test": "lerna --concurrency 1 run test --stream",
     "bench": "lerna run bench"
   },

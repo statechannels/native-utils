@@ -11,8 +11,8 @@
     "lodash": "^4.17.20"
   },
   "scripts": {
-    "install": "./scripts/prepare.sh",
-    "test": "jest --config jest.config.js --verbose",
+    "install": "./scripts/install.sh",
+    "test": "yarn install && jest --config jest.config.js --verbose",
     "bench": "node bench/index.js"
   },
   "devDependencies": {

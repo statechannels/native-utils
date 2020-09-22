@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@statechannels/server-wallet": "^0.3.6",
+    "@types/lodash": "^4.14.161",
     "benny": "^3.6.14",
     "jest": "^26.4.2",
     "neon-cli": "^0.3.3",

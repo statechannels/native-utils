@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Force WASM to be used
-        run: sed -i -e 's/native/wasm/' packages/native-utils/scripts/prepare.sh
+        run: sed -i -e 's/native/wasm/' packages/native-utils/scripts/install.sh
       - run: yarn bootstrap
       - run: yarn test
       - run: yarn bench

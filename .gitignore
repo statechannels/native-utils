@@ -1,9 +1,4 @@
-common/target
-native/native/target
-native/native/index.node
-native/native/artifacts.json
-wasm/target
-**/*~
 **/node_modules
 **/.DS_Store
 **/*.log
+packages/wasm-utils

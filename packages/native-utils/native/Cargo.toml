@@ -4,6 +4,8 @@ version = "0.1.0"
 build = "build.rs"
 exclude = ["artifacts.json", "index.node"]
 edition = "2018"
+license = "MIT"
+authors = ["Jannis Pohlmann <jannis@thegraph.com>"]
 
 [lib]
 name = "statechannels_native_utils"
@@ -15,4 +17,4 @@ neon-build = "0.3.3"
 [dependencies]
 neon = "0.4"
 neon-serde = "0.4"
-statechannels-native-utils-common = { path = "../../common" }
+statechannels-native-utils-common = { path = "../common" }

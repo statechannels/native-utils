@@ -5,8 +5,8 @@ import {
   Uint256,
 } from '@statechannels/wallet-core'
 import * as serverWallet from '@statechannels/server-wallet/lib/src/utilities/signatures'
-import * as native from '../native/lib'
-import * as wasm from '../wasm/pkg'
+import * as wasm from '@statechannels/wasm-utils'
+import * as native from '..'
 
 const DEFAULT_STATE: State = {
   turnNum: 1,

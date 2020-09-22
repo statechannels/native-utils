@@ -459,14 +459,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "statechannels-native-utils-wasm"
-version = "0.1.0"
-dependencies = [
- "statechannels-native-utils-common",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -598,3 +590,11 @@ name = "wasm-bindgen-shared"
 version = "0.2.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d649a3145108d7d3fbcde896a468d1bd636791823c9921135218ad89be08307"
+
+[[package]]
+name = "wasm-utils"
+version = "0.1.0"
+dependencies = [
+ "statechannels-native-utils-common",
+ "wasm-bindgen",
+]

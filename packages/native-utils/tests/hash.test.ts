@@ -1,8 +1,6 @@
-process.argv.push('--experimental-modules', '--experimental-wasm-modules')
-
 import * as nitro from '@statechannels/nitro-protocol'
-import * as native from '../native/lib'
-import * as wasm from '../wasm/pkg'
+import * as wasm from '@statechannels/wasm-utils'
+import * as native from '..'
 
 const DEFAULT_STATE: nitro.State = {
   turnNum: 1,

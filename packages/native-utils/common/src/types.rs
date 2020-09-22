@@ -1,6 +1,7 @@
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::ops::Deref;
+use std::str::FromStr;
 
 use ethereum_types::U256;
 use serde::de::{Error as SerdeError, *};
@@ -199,8 +200,8 @@ impl<'de> Visitor<'de> for Uint256Visitor {
         E: SerdeError,
     {
         U256::from_dec_str(s)
+            .or_else(|_| U256::from_str(s.trim_start_matches("0x")).map_err(SerdeError::custom))
             .map(Uint256::from)
-            .map_err(SerdeError::custom)
     }
 }
 

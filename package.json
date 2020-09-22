@@ -2,13 +2,11 @@
   "name": "root",
   "private": true,
   "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
+    "packages": ["packages/*"]
   },
   "scripts": {
     "bootstrap:wasm-utils": "cd wasm-utils && yarn",
-    "bootstrap": "yarn bootstrap:wasm-utils && lerna bootstrap",
+    "bootstrap": "yarn bootstrap:wasm-utils && yarn",
     "prepare": "lerna run prepare",
     "publish": "lerna publish",
     "test": "lerna --concurrency 1 run test --stream",

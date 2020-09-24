@@ -1,0 +1,8 @@
+node_modules
+lib/index.js
+native/artifacts.json
+native/index.node
+native/target
+native/common/target
+yarn-error.log
+package-lock.json

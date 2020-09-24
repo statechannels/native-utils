@@ -1,0 +1,14 @@
+[package]
+name = "wasm-utils"
+version = "0.1.0"
+edition = "2018"
+license = "MIT"
+authors = ["Jannis Pohlmann <jannis@thegraph.com>"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+js-sys = "0.3"
+statechannels-native-utils-common = { path = "../packages/native-utils/common" }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }

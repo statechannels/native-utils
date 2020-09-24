@@ -1,0 +1,13 @@
+{
+  "name": "@statechannels/wasm-utils",
+  "version": "0.1.0",
+  "author": "Jannis Pohlmann <jannis@thegraph.com>",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "wasm-pack build --target nodejs --scope statechannels --out-dir=../packages/wasm-utils",
+    "publish": "wasm-pack publish"
+  },
+  "devDependencies": {
+    "wasm-pack": "^0.9.1"
+  }
+}

@@ -9,5 +9,6 @@ authors = ["Jannis Pohlmann <jannis@thegraph.com>"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+js-sys = "0.3"
 statechannels-native-utils-common = { path = "../packages/native-utils/common" }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }

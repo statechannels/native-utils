@@ -249,4 +249,14 @@ describe('hashState', () => {
     expect(native.hashState(DEFAULT_STATE)).toStrictEqual(nitro.hashState(DEFAULT_STATE))
     expect(wasm.hashState(DEFAULT_STATE)).toStrictEqual(nitro.hashState(DEFAULT_STATE))
   })
+
+  test('Odd-length appData state', () => {
+    const oddLengthAppDataState = { ...DEFAULT_STATE, appData: '0x0' }
+    expect(native.hashState(oddLengthAppDataState)).toStrictEqual(
+      nitro.hashState(oddLengthAppDataState),
+    )
+    expect(wasm.hashState(oddLengthAppDataState)).toStrictEqual(
+      nitro.hashState(oddLengthAppDataState),
+    )
+  })
 })

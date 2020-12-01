@@ -703,7 +703,7 @@ dependencies = [
 
 [[package]]
 name = "statechannels-native-utils-common"
-version = "0.2.0"
+version = "0.1.0"
 dependencies = [
  "ethabi",
  "ethereum-types",

@@ -1,10 +1,6 @@
-import { AllocationAssetOutcome, State } from '@statechannels/nitro-protocol'
-import {
-  Destination,
-  State as WalletCoreState,
-  Uint256,
-} from '@statechannels/wallet-core'
-import * as serverWallet from '@statechannels/server-wallet/lib/src/utilities/signatures'
+import { utils } from 'ethers'
+import { State } from '@statechannels/nitro-protocol'
+import * as nitro from '@statechannels/nitro-protocol'
 import * as wasm from '@statechannels/wasm-utils'
 import * as native from '..'
 
@@ -33,51 +29,17 @@ const DEFAULT_STATE: State = {
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
 }
 
-const DEFAULT_WALLET_CORE_STATE: WalletCoreState = {
-  turnNum: DEFAULT_STATE.turnNum,
-  isFinal: DEFAULT_STATE.isFinal,
-  chainId: DEFAULT_STATE.channel.chainId,
-  channelNonce: DEFAULT_STATE.channel.channelNonce,
-  participants: DEFAULT_STATE.channel.participants.map(p => ({
-    participantId: p,
-    destination: p as Destination,
-    signingAddress: p,
-  })),
-  challengeDuration: DEFAULT_STATE.challengeDuration,
-  outcome: {
-    type: 'SimpleAllocation',
-    assetHolderAddress: DEFAULT_STATE.outcome[0].assetHolderAddress,
-    allocationItems: (DEFAULT_STATE
-      .outcome[0] as AllocationAssetOutcome).allocationItems.map(ai => ({
-      destination: ai.destination as Destination,
-      amount: ai.amount as Uint256,
-    })),
-  },
-  appData: DEFAULT_STATE.appData,
-  appDefinition: DEFAULT_STATE.appDefinition,
-}
-
 const PRIVATE_KEY = '0x1111111111111111111111111111111111111111111111111111111111111111'
 
 describe('Recover address', () => {
   test('Recover from signed state', async () => {
     const signedState = native.signState(DEFAULT_STATE, PRIVATE_KEY)
 
-    // This is needed so that secp256k1 is properly initialized in
-    // https://github.com/statechannels/statechannels/blob/master/packages/server-wallet/src/utilities/signatures.ts#L54
-    //
-    // This initialization is missing in `fastRecoverAddress` at the moment.
-    const oldSignedState = await serverWallet.fastSignState(
-      { ...DEFAULT_WALLET_CORE_STATE, stateHash: signedState.hash },
-      PRIVATE_KEY,
-    )
-
     // Old
-    const oldAddress = serverWallet.fastRecoverAddress(
-      DEFAULT_WALLET_CORE_STATE,
-      signedState.signature,
-      signedState.hash,
-    )
+    const oldAddress = nitro.getStateSignerAddress({
+      state: DEFAULT_STATE,
+      signature: utils.splitSignature(signedState.signature),
+    })
 
     // Native
     const nativeAddress = native.recoverAddress(DEFAULT_STATE, signedState.signature)

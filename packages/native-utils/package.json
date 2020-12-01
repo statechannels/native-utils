@@ -6,7 +6,6 @@
   "author": "Jannis Pohlmann <jannis@thegraph.com>",
   "license": "MIT",
   "dependencies": {
-    "@statechannels/nitro-protocol": "^0.3.6",
     "@statechannels/wasm-utils": "^0.1.6",
     "lodash": "^4.17.20"
   },
@@ -16,7 +15,8 @@
     "bench": "node bench/index.js"
   },
   "devDependencies": {
-    "@statechannels/server-wallet": "^0.3.6",
+    "@statechannels/nitro-protocol": "^0.11.0",
+    "@statechannels/server-wallet": "^1.14.0",
     "@types/jest": "^26.0.14",
     "benny": "^3.6.14",
     "jest": "^26.4.2",

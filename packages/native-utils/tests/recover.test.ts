@@ -115,10 +115,10 @@ describe('Recover address', () => {
     // Altogether invalid signature
     const signedState = native.signState(DEFAULT_STATE, PRIVATE_KEY)
     expect(() =>
-      native.recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(3)}`),
+      native.recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(13)}`),
     ).toThrow('invalid signature')
     expect(() =>
-      wasm.recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(3)}`),
+      wasm.recoverAddress(DEFAULT_STATE, `0xf${signedState.signature.substr(13)}`),
     ).toThrow('invalid signature')
   })
 })

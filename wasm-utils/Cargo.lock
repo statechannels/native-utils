@@ -602,7 +602,7 @@ checksum = "1d649a3145108d7d3fbcde896a468d1bd636791823c9921135218ad89be08307"
 
 [[package]]
 name = "wasm-utils"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "js-sys",
  "statechannels-native-utils-common",

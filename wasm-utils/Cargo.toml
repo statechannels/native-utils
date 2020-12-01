@@ -1,9 +1,12 @@
 [package]
 name = "wasm-utils"
-version = "0.1.0"
+version = "0.1.5"
 edition = "2018"
 license = "MIT"
-authors = ["Jannis Pohlmann <jannis@thegraph.com>"]
+authors = [
+    "Jannis Pohlmann <jannis@thegraph.com>",
+    "George Knee <george.knee@mesh.xyz>"
+    ]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

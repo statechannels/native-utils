@@ -113,7 +113,7 @@ pub struct Outcome(Vec<AssetOutcome>);
 
 impl Outcome {
     pub fn hash(&self) -> Bytes32 {
-        keccak256(encode(&[Token::Bytes(self.encode())]).as_slice()).into()
+        keccak256(&self.encode()).into()
     }
 }
 

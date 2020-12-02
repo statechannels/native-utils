@@ -2,12 +2,11 @@
   "name": "@statechannels/native-utils",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "Jannis Pohlmann <jannis@thegraph.com>",
   "license": "MIT",
   "dependencies": {
-    "@statechannels/nitro-protocol": "^0.3.6",
-    "@statechannels/wasm-utils": "0.1.5",
+    "@statechannels/wasm-utils": "^0.1.6",
     "lodash": "^4.17.20"
   },
   "scripts": {
@@ -16,9 +15,10 @@
     "bench": "node bench/index.js"
   },
   "devDependencies": {
-    "@statechannels/server-wallet": "^0.3.6",
+    "@statechannels/nitro-protocol": "^0.11.0",
     "@types/jest": "^26.0.14",
     "benny": "^3.6.14",
+    "ethers": "5.0.12",
     "jest": "^26.4.2",
     "neon-cli": "^0.3.3",
     "ts-jest": "^26.4.0",

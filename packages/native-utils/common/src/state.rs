@@ -11,7 +11,7 @@ use super::tokenize::*;
 use super::types::*;
 use super::utils::*;
 
-#[derive(Deserialize)]
+#[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationItem {
     pub destination: Bytes32,
@@ -39,7 +39,7 @@ impl Tokenize for AssetOutcomeType {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationAssetOutcome {
     pub asset_holder_address: Address,
@@ -55,7 +55,7 @@ impl Tokenize for AllocationAssetOutcome {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Guarantee {
     pub target_channel_id: Bytes32,
@@ -71,7 +71,7 @@ impl Tokenize for Guarantee {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct GuaranteeAssetOutcome {
     pub asset_holder_address: Address,
@@ -87,7 +87,7 @@ impl Tokenize for GuaranteeAssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum AssetOutcome {
     AllocationAssetOutcome(AllocationAssetOutcome),
@@ -107,7 +107,7 @@ impl Tokenize for AssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, PartialEq)]
 #[serde(transparent)]
 pub struct Outcome(Vec<AssetOutcome>);
 
@@ -161,6 +161,11 @@ pub struct State {
     pub outcome: Outcome,
     pub app_definition: Address,
     pub app_data: Bytes,
+}
+
+pub enum Status {
+    True,
+    NeedToCheckApp,
 }
 
 impl State {
@@ -218,6 +223,54 @@ impl State {
             .or_else(|_| Err("invalid signature"))?;
 
         Ok(checksum_address(public_key_to_address(public_key)))
+    }
+
+
+
+    fn _require_extra_implicit_checks(&self, to_state: &State) -> Result<(), &'static str> {
+        if &self.turn_num.0 + 1 != to_state.turn_num.0 {
+            Err("turnNum must increment by one")
+        } else if self.channel.chain_id != to_state.channel.chain_id {
+            Err("chainId must not change")
+        } else if self.channel.channel_nonce != to_state.channel.channel_nonce {
+            Err("channelNonce must not change")
+        } else if self.app_definition != to_state.app_definition {
+            Err("appDefinition must not change")
+        } else if self.challenge_duration != to_state.challenge_duration {
+            Err("challengeDuration must not change")
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn require_valid_protocol_transition(self, to_state: State) -> Result<Status, &'static str> {
+        self._require_extra_implicit_checks(&to_state)?;
+
+        if to_state.is_final {
+            if self.outcome != to_state.outcome {
+                Err("Outcome change verboten")
+            } else {
+                Ok(Status::True)
+            }
+        } else {
+            if self.is_final {
+                Err("isFinal retrograde")
+            } else {
+                if to_state.turn_num < Uint48(2 * to_state.channel.participants.len() as u64) {
+                    if self.outcome != to_state.outcome {
+                        Err("Outcome change verboten")
+                    } else if self.app_data != to_state.app_data {
+                        Err("appData change forbidden")
+                    }
+                    else {
+                        Ok(Status::True)
+                    }
+                }
+                else {
+                    Ok(Status::NeedToCheckApp)
+                }
+            }
+        }
     }
 }
 

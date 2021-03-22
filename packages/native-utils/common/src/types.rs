@@ -19,6 +19,7 @@ impl ToHexString for Vec<u8> {
     }
 }
 
+#[derive(PartialEq)]
 pub struct Bytes(pub Vec<u8>);
 
 impl Deref for Bytes {
@@ -55,6 +56,7 @@ impl Tokenize for Bytes {
     }
 }
 
+#[derive(PartialEq)]
 pub struct Bytes32(Vec<u8>);
 
 impl From<[u8; 32]> for Bytes32 {
@@ -107,6 +109,7 @@ impl Tokenize for Bytes32 {
     }
 }
 
+#[derive(PartialEq, PartialOrd)]
 pub struct Uint48(pub u64);
 
 impl<'de> Deserialize<'de> for Uint48 {
@@ -124,6 +127,7 @@ impl Tokenize for Uint48 {
     }
 }
 
+#[derive(PartialEq)]
 pub struct Uint256(pub U256);
 
 impl From<U256> for Uint256 {

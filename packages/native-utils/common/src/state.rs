@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use ethabi::{encode, Token};
 use ethereum_types::{Address, U256};
-use secp256k1::{recover, sign, Message, RecoveryId, SecretKey, Signature};
+use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
 use serde_derive::*;
 
 use super::encode::*;
@@ -197,7 +197,16 @@ impl State {
         Ok(checksum_address(public_key_to_address(public_key)))
     }
 
-
+    pub fn verify(self, signature: RecoverableSignature) -> Result<bool, &'static str> {
+        let hash = self.hash();
+        let hashed_message = hash_message(&hash);
+        let message = Message::parse(&hashed_message);
+        match recover(&message, &signature.0, &signature.1)
+        {
+            Ok(pubkey) => Ok(verify(&message, &signature.0, &pubkey)),
+            Err(_error) => Ok(false)
+        }
+    }
 
     fn _require_extra_implicit_checks(&self, to_state: &State) -> Result<(), &'static str> {
         if &self.turn_num.0 + 1 != to_state.turn_num.0 {
@@ -247,6 +256,14 @@ impl State {
 }
 
 pub struct RecoverableSignature(pub Signature, pub RecoveryId);
+
+impl RecoverableSignature {
+    pub fn as_bytes(self) -> Bytes {
+        let mut v = self.0.serialize().to_vec();
+        v.push(self.1.serialize());
+        Bytes(v)
+    }
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

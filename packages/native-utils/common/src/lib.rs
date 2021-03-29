@@ -1,6 +1,7 @@
 mod encode;
 mod serde;
 mod state;
+mod channel;
 mod tokenize;
 mod types;
 mod utils;
@@ -11,4 +12,5 @@ pub mod prelude {
     pub use super::tokenize::Tokenize;
     pub use super::types::*;
     pub use super::utils::*;
+    pub use super::channel::*;
 }

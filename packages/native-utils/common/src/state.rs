@@ -6,10 +6,10 @@ use secp256k1::{recover, sign, Message, RecoveryId, SecretKey, Signature};
 use serde_derive::*;
 
 use super::encode::*;
-use super::serde::*;
 use super::tokenize::*;
 use super::types::*;
 use super::utils::*;
+use super::channel::*;
 
 #[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -125,34 +125,6 @@ impl Tokenize for Outcome {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Channel {
-    pub chain_id: Uint256,
-    pub channel_nonce: Uint256,
-    pub participants: Vec<Address>,
-}
-
-impl Channel {
-    pub fn id(&self) -> Bytes32 {
-        keccak256(
-            encode(&[
-                self.chain_id.tokenize(),
-                Token::Array(
-                    self.participants
-                        .iter()
-                        .cloned()
-                        .map(Token::Address)
-                        .collect(),
-                ),
-                self.channel_nonce.tokenize(),
-            ])
-            .as_slice(),
-        )
-        .into()
-    }
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct State {
     pub turn_num: Uint48,
     pub is_final: bool,
@@ -207,7 +179,7 @@ impl State {
 
         Ok(StateSignature {
             hash,
-            signature: (signature, recovery_id),
+            signature: RecoverableSignature(signature, recovery_id),
         })
     }
 
@@ -274,10 +246,12 @@ impl State {
     }
 }
 
+pub struct RecoverableSignature(pub Signature, pub RecoveryId);
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StateSignature {
     hash: Bytes32,
-    #[serde(serialize_with = "serialize_signature")]
-    signature: (Signature, RecoveryId),
+    //#[serde(serialize_with = "serialize_signature")]
+    signature: RecoverableSignature,
 }

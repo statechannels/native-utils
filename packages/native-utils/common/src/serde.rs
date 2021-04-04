@@ -36,12 +36,6 @@ impl<'de> Deserialize<'de> for RecoverableSignature {
         D: Deserializer<'de>,
     {
         let bytes: Bytes = Deserialize::deserialize(deserializer)?;
-        assert_eq!(65,bytes.0.len());
-        let mut a: [u8; 64] = [0; 64];
-        a.copy_from_slice(&bytes.0[0..64]);
-        Ok(RecoverableSignature(
-            Signature::parse(&a),
-            RecoveryId::parse(bytes.0[64] - 27).map_err(D::Error::custom)?
-        ))
+        Ok(RecoverableSignature::from_bytes(bytes).map_err(D::Error::custom)?)
     }
 }

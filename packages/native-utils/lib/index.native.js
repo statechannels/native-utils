@@ -10,6 +10,7 @@ const {
 
   signState,
   recoverAddress,
+  verifySignature,
 } = require('../native/index.node')
 
 function unwrapResult({ Ok, Err }) {
@@ -40,4 +41,6 @@ module.exports = {
   },
 
   recoverAddress: (state, signature) => unwrapResult(recoverAddress(state, signature)),
+
+  verifySignature: (state, signature) => unwrapResult(verifySignature(state, signature)),
 }

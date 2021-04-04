@@ -79,3 +79,11 @@ export function signState(state: State, privateKey: string): StateWithHashAndSig
  * @param signature A signature resulting from a previous call to `signState`.
  */
 export function recoverAddress(state: State, signature: string): string
+
+/**
+ * Verifies a signature.
+ *
+ * @param state A Nitro state.
+ * @param signature A signature resulting from a previous call to `signState`.
+ */
+ export function verifySignature(state: State, signature: string): boolean

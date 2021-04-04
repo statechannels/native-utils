@@ -99,6 +99,9 @@ describe('Sign state', () => {
 
     expect(nativeSignature).toStrictEqual(oldSignature)
     expect(wasmSignature).toStrictEqual(oldSignature)
+
+    expect(native.verifySignature(state, nativeSignature)).toBe(true)
+    expect(native.verifySignature(state, wasmSignature)).toBe(true)
   })
 
   test('Catches invalid private key', async () => {

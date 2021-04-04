@@ -263,6 +263,16 @@ impl RecoverableSignature {
         v.push(self.1.serialize());
         Bytes(v)
     }
+
+    pub fn from_bytes(bytes: Bytes) -> Result<RecoverableSignature,  &'static str> {
+        assert_eq!(65,bytes.0.len());
+        let mut a: [u8; 64] = [0; 64];
+        a.copy_from_slice(&bytes.0[0..64]);
+        Ok(RecoverableSignature(
+            Signature::parse(&a),
+            RecoveryId::parse(bytes.0[64] - 27).map_err(|_| "Invalid recovery ID")?
+        ))
+    }
 }
 
 #[derive(Serialize)]

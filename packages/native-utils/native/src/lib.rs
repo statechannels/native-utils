@@ -37,4 +37,8 @@ export! {
   fn recoverAddress(state: State, signature: Bytes) -> Result<String, &'static str> {
     state.recover_address(signature)
   }
+
+  fn verifySignature(state: State, signature: Bytes) -> Result<bool, &'static str> {
+    state.verify(RecoverableSignature::from_bytes(signature)?)
+  }
 }

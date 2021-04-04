@@ -11,7 +11,7 @@ const DEFAULT_STATE: State = {
   channel: {
     chainId: '1',
     channelNonce: 1,
-    participants: ['0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A'],
+    participants: ['0x63FaC9201494f0bd17B9892B9fae4d52fe3BD377'],
   },
   challengeDuration: 1,
   outcome: [],
@@ -19,7 +19,7 @@ const DEFAULT_STATE: State = {
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
 }
 
-const PRIVATE_KEY = '0x1111111111111111111111111111111111111111111111111111111111111111'
+const PRIVATE_KEY = '0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
 
 describe('Hash message', () => {
   test('Hash a message', async () => {
@@ -92,16 +92,17 @@ describe('Sign state', () => {
     )
 
     // Native
-    const nativeSignature = native.signState(state, PRIVATE_KEY).signature
+    const nativeSigned = native.signState(state, PRIVATE_KEY)
 
     // WASM
-    const wasmSignature = wasm.signState(state, PRIVATE_KEY).signature
+    const wasmSigned = wasm.signState(state, PRIVATE_KEY)
 
-    expect(nativeSignature).toStrictEqual(oldSignature)
-    expect(wasmSignature).toStrictEqual(oldSignature)
+    expect(nativeSigned.signature).toStrictEqual(oldSignature)
+    expect(wasmSigned.signature).toStrictEqual(oldSignature)
 
-    expect(native.verifySignature(state, nativeSignature)).toBe(true)
-    expect(native.verifySignature(state, wasmSignature)).toBe(true)
+    expect(native.verifySignature(nativeSigned.hash, nativeSigned.signature)).toBe(true)
+    expect(native.verifySignature(wasmSigned.hash, wasmSigned.signature)).toBe(true)
+    expect(nativeSigned.hash).toStrictEqual(wasmSigned.hash)
   })
 
   test('Catches invalid private key', async () => {

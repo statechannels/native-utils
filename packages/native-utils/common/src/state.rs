@@ -197,17 +197,6 @@ impl State {
         Ok(checksum_address(public_key_to_address(public_key)))
     }
 
-    pub fn verify(self, signature: RecoverableSignature) -> Result<bool, &'static str> {
-        let hash = self.hash();
-        let hashed_message = hash_message(&hash);
-        let message = Message::parse(&hashed_message);
-        match recover(&message, &signature.0, &signature.1)
-        {
-            Ok(pubkey) => Ok(verify(&message, &signature.0, &pubkey)),
-            Err(_error) => Ok(false)
-        }
-    }
-
     fn _require_extra_implicit_checks(&self, to_state: &State) -> Result<(), &'static str> {
         if &self.turn_num.0 + 1 != to_state.turn_num.0 {
             Err("turnNum must increment by one")
@@ -252,6 +241,19 @@ impl State {
                 }
             }
         }
+    }
+}
+
+pub fn verify_sig(hash: Bytes32, signature: RecoverableSignature) -> Result<bool, &'static str> {
+
+    let hashed_message = hash_message(&hash);
+    
+    let message = Message::parse(&hashed_message);
+
+    match recover(&message, &signature.0, &signature.1)
+    {
+        Ok(pubkey) => Ok(verify(&message, &signature.0, &pubkey)),
+        Err(_error) => Ok(false)
     }
 }
 

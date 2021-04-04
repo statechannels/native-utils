@@ -42,5 +42,5 @@ module.exports = {
 
   recoverAddress: (state, signature) => unwrapResult(recoverAddress(state, signature)),
 
-  verifySignature: (state, signature) => unwrapResult(verifySignature(state, signature)),
+  verifySignature: (hash, signature) => unwrapResult(verifySignature(hash, signature)),
 }

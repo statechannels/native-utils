@@ -38,7 +38,7 @@ export! {
     state.recover_address(signature)
   }
 
-  fn verifySignature(state: State, signature: Bytes) -> Result<bool, &'static str> {
-    state.verify(RecoverableSignature::from_bytes(signature)?)
+  fn verifySignature(hash: Bytes32, signature: Bytes) -> Result<bool, &'static str> {
+    verify_sig(hash, RecoverableSignature::from_bytes(signature)?)
   }
 }

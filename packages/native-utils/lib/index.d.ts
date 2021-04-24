@@ -86,4 +86,4 @@ export function recoverAddress(state: State, signature: string): string
  * @param state A Nitro state.
  * @param signature A signature resulting from a previous call to `signState`.
  */
- export function verifySignature(hash: Bytes32, signature: string): boolean
+ export function verifySignature(hash: Bytes32, address: string, signature: string): boolean

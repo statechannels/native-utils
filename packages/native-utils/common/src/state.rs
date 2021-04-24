@@ -244,17 +244,20 @@ impl State {
     }
 }
 
-pub fn verify_sig(hash: Bytes32, signature: RecoverableSignature) -> Result<bool, &'static str> {
+pub fn verify_sig(hash: Bytes32, address: String, signature: Bytes) -> Result<bool, &'static str> {
 
     let hashed_message = hash_message(&hash);
-    
     let message = Message::parse(&hashed_message);
+    let parsed_signature = Signature::parse_slice(&signature[0..signature.len() - 1])
+        .or_else(|_| Err("invalid signature length"))?;
+    let recovery_id = RecoveryId::parse_rpc(signature[signature.len() - 1])
+        .or_else(|_| Err("invalid recovery ID"))?;
+    let public_key = recover(&message, &parsed_signature, &recovery_id)
+        .or_else(|_| Err("invalid signature"))?;
 
-    match recover(&message, &signature.0, &signature.1)
-    {
-        Ok(pubkey) => Ok(verify(&message, &signature.0, &pubkey)),
-        Err(_error) => Ok(false)
-    }
+    let recovered_address = checksum_address(public_key_to_address(public_key));
+
+    Ok(recovered_address.eq(&address))
 }
 
 pub struct RecoverableSignature(pub Signature, pub RecoveryId);

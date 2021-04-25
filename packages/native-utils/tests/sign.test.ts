@@ -100,19 +100,6 @@ describe('Sign state', () => {
 
     expect(nativeSigned.signature).toStrictEqual(oldSignature)
     expect(wasmSigned.signature).toStrictEqual(oldSignature)
-
-    // State hash can be verified by signature
-    expect(native.verifySignature(nativeSigned.hash, state.channel.participants[0], nativeSigned.signature)).toBe(true)
-    expect(native.verifySignature(wasmSigned.hash, state.channel.participants[0], wasmSigned.signature)).toBe(true)
-    expect(nativeSigned.hash).toStrictEqual(wasmSigned.hash)
-
-    // Old state cannot be verified by new signature
-    // New state cannto be vierified by old signature
-    state.turnNum += 1
-    const signedNewState = native.signState(state, PRIVATE_KEY1)
-    expect(native.verifySignature(nativeSigned.hash, state.channel.participants[0], signedNewState.signature)).toBe(false)
-    expect(native.verifySignature(signedNewState.hash, state.channel.participants[0], nativeSigned.signature)).toBe(false)
-    expect(native.verifySignature(signedNewState.hash, state.channel.participants[0], signedNewState.signature)).toBe(true)
   })
 
   test('Peer states validate as expected', async () => {

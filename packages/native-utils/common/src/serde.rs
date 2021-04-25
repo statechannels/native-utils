@@ -1,7 +1,6 @@
 use hex;
 use serde::ser::{Serialize, Serializer};
 use serde::de::{Error, Deserialize, Deserializer};
-use secp256k1::{RecoveryId, Signature};
 
 use super::state::RecoverableSignature;
 use super::types::*;

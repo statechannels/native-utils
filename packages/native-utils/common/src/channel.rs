@@ -1,11 +1,7 @@
-use std::ops::Deref;
-
 use ethabi::{encode, Token};
-use ethereum_types::{Address, U256};
-use secp256k1::{recover, sign, Message, RecoveryId, SecretKey, Signature};
+use ethereum_types::{Address};
 use serde_derive::*;
 
-use super::encode::*;
 use super::tokenize::*;
 use super::types::*;
 use super::utils::*;
@@ -47,13 +43,5 @@ impl Channel {
             .as_slice(),
         )
         .into()
-    }
-
-    pub fn computeNextStatesFromPeerUpdate(
-        peerState: State,
-        app_data: Bytes,
-
-    ) {
-
     }
 }

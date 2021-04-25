@@ -146,6 +146,7 @@ describe('Sign state', () => {
 
     const nativeSigned1 = native.signState(peerState, PRIVATE_KEY2);
     expect(native.validatePeerUpdate(currentState, peerState, nativeSigned1.signature)).toEqual("True")
+    expect(wasm.validatePeerUpdate(currentState, peerState, nativeSigned1.signature)).toEqual("True")
 
     // Additional updates
     currentState.turnNum = 3;
@@ -153,10 +154,12 @@ describe('Sign state', () => {
 
     const nativeSigned2 = native.signState(peerState, PRIVATE_KEY2);
     expect(native.validatePeerUpdate(currentState, peerState, nativeSigned2.signature)).toEqual("NeedToCheckApp")
+    expect(wasm.validatePeerUpdate(currentState, peerState, nativeSigned2.signature)).toEqual("NeedToCheckApp")
 
     // Singed by wrong signature
     const nativeSigned3 = native.signState(peerState, PRIVATE_KEY1);
     expect(() => native.validatePeerUpdate(currentState, peerState, nativeSigned3.signature)).toThrow('Signature verification failed');
+    expect(() => wasm.validatePeerUpdate(currentState, peerState, nativeSigned3.signature)).toThrow('Signature verification failed');
   })
 
 

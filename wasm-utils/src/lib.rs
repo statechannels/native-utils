@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use js_sys::JsString;
+use js_sys::{JsString};
 use wasm_bindgen::prelude::*;
 
 use statechannels_native_utils_common::prelude::{hash_message as do_hash_message, *};
@@ -79,4 +79,13 @@ pub fn recover_address(state: &JsState, signature: &JsString) -> Result<JsString
     let signature: Bytes = signature.into_serde().unwrap();
     let address = state.recover_address(signature).map_err(JsValue::from)?;
     Ok(JsValue::from_serde(&address).unwrap().into())
+}
+
+#[wasm_bindgen(js_name = "validatePeerUpdate")]
+pub fn validate_peer_update(state: &JsState, peer_update: &JsState, signature: &JsString) -> Result<JsString, JsValue> {
+    let state: State = state.into_serde().unwrap();
+    let peer_update: State = peer_update.into_serde().unwrap();
+    let signature: Bytes = signature.into_serde().unwrap();
+    let result = state.validate_peer_update(peer_update, signature).map_err(JsValue::from)?;
+    Ok(JsValue::from_serde(&result).unwrap().into())
 }

@@ -87,3 +87,12 @@ export function recoverAddress(state: State, signature: string): string
  * @param signature A signature resulting from a previous call to `signState`.
  */
  export function verifySignature(hash: Bytes32, address: string, signature: string): boolean
+
+ /**
+ * Validate peer update.
+ *
+ * @param state A Nitro state.
+ * @param peer_update Next state suggested by peer
+ * @param signature Peer's signature for next state.
+ */
+  export function validatePeerUpdate(state, peer_update, signature): string

@@ -11,7 +11,7 @@ const DEFAULT_STATE: State = {
   channel: {
     chainId: '1',
     channelNonce: 1,
-    participants: ['0x63FaC9201494f0bd17B9892B9fae4d52fe3BD377'],
+    participants: ['0x63FaC9201494f0bd17B9892B9fae4d52fe3BD377', '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'],
   },
   challengeDuration: 1,
   outcome: [],
@@ -19,7 +19,8 @@ const DEFAULT_STATE: State = {
   appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
 }
 
-const PRIVATE_KEY = '0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
+const PRIVATE_KEY1 = '0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
+const PRIVATE_KEY2 = '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d'
 
 describe('Hash message', () => {
   test('Hash a message', async () => {
@@ -54,14 +55,14 @@ describe('Sign state', () => {
       outcome,
     }
     const oldSignature = utils.joinSignature(
-      (await nitro.signState(state, PRIVATE_KEY)).signature,
+      (await nitro.signState(state, PRIVATE_KEY1)).signature,
     )
 
     // Native
-    const nativeSignature = native.signState(state, PRIVATE_KEY).signature
+    const nativeSignature = native.signState(state, PRIVATE_KEY1).signature
 
     // WASM
-    const wasmSignature = wasm.signState(state, PRIVATE_KEY).signature
+    const wasmSignature = wasm.signState(state, PRIVATE_KEY1).signature
 
     expect(nativeSignature).toStrictEqual(oldSignature)
     expect(wasmSignature).toStrictEqual(oldSignature)
@@ -88,14 +89,14 @@ describe('Sign state', () => {
     }
 
     const oldSignature = utils.joinSignature(
-      (await nitro.signState(state, PRIVATE_KEY)).signature,
+      (await nitro.signState(state, PRIVATE_KEY1)).signature,
     )
 
     // Native
-    const nativeSigned = native.signState(state, PRIVATE_KEY)
+    const nativeSigned = native.signState(state, PRIVATE_KEY1)
 
     // WASM
-    const wasmSigned = wasm.signState(state, PRIVATE_KEY)
+    const wasmSigned = wasm.signState(state, PRIVATE_KEY1)
 
     expect(nativeSigned.signature).toStrictEqual(oldSignature)
     expect(wasmSigned.signature).toStrictEqual(oldSignature)
@@ -108,11 +109,56 @@ describe('Sign state', () => {
     // Old state cannot be verified by new signature
     // New state cannto be vierified by old signature
     state.turnNum += 1
-    const signedNewState = native.signState(state, PRIVATE_KEY)
+    const signedNewState = native.signState(state, PRIVATE_KEY1)
     expect(native.verifySignature(nativeSigned.hash, state.channel.participants[0], signedNewState.signature)).toBe(false)
     expect(native.verifySignature(signedNewState.hash, state.channel.participants[0], nativeSigned.signature)).toBe(false)
     expect(native.verifySignature(signedNewState.hash, state.channel.participants[0], signedNewState.signature)).toBe(true)
   })
+
+  test('Peer states validate as expected', async () => {
+    const outcome = [
+      {
+        assetHolderAddress: '0x0000000000000000000000000000000000000000',
+        guarantee: {
+          targetChannelId:
+            '0x0000000000000000000000000000000000000000000000000000000000000000',
+          destinations: [
+            '0x0000000000000000000000000000000000000000000000000000000000000000',
+            '0x1111111111111111111111111111111111111111111111111111111111111111',
+          ],
+        },
+      },
+    ]
+
+    const currentState = {
+      ...DEFAULT_STATE,
+      outcome,
+    }
+
+    const peerState = {
+      ...DEFAULT_STATE,
+      outcome,
+    }
+
+    // First 2 updates
+    currentState.turnNum = 1;
+    peerState.turnNum = 2;
+
+    const nativeSigned1 = native.signState(peerState, PRIVATE_KEY2);
+    expect(native.validatePeerUpdate(currentState, peerState, nativeSigned1.signature)).toEqual("True")
+
+    // Additional updates
+    currentState.turnNum = 3;
+    peerState.turnNum = 4;
+
+    const nativeSigned2 = native.signState(peerState, PRIVATE_KEY2);
+    expect(native.validatePeerUpdate(currentState, peerState, nativeSigned2.signature)).toEqual("NeedToCheckApp")
+
+    // Singed by wrong signature
+    const nativeSigned3 = native.signState(peerState, PRIVATE_KEY1);
+    expect(() => native.validatePeerUpdate(currentState, peerState, nativeSigned3.signature)).toThrow('Signature verification failed');
+  })
+
 
   test('Catches invalid private key', async () => {
     // Invalid signature length

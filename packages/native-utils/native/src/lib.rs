@@ -41,4 +41,8 @@ export! {
   fn verifySignature(hash: Bytes32, address: String, signature: Bytes) -> Result<bool, &'static str> {
     verify_sig(hash, address, signature)
   }
+
+  fn validatePeerUpdate(state: State, peer_update: State, peer_signature: Bytes) -> Result<Status, &'static str> {
+    state.validate_peer_update(peer_update, peer_signature)
+  }
 }

@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use ethabi::{encode, Token};
 use ethereum_types::{Address, U256};
-use secp256k1::{recover, sign, verify, Message, RecoveryId, SecretKey, Signature};
+use secp256k1::{recover, sign, Message, RecoveryId, SecretKey, Signature};
 use serde_derive::*;
 
 use super::encode::*;
@@ -135,6 +135,7 @@ pub struct State {
     pub app_data: Bytes,
 }
 
+#[derive(Serialize)]
 pub enum Status {
     True,
     NeedToCheckApp,
@@ -183,7 +184,7 @@ impl State {
         })
     }
 
-    pub fn recover_address(self, signature: Bytes) -> Result<String, &'static str> {
+    pub fn recover_address(&self, signature: Bytes) -> Result<String, &'static str> {
         let hash = self.hash();
         let hashed_message = hash_message(&hash);
         let message = Message::parse(&hashed_message);
@@ -195,6 +196,23 @@ impl State {
             .or_else(|_| Err("invalid signature"))?;
 
         Ok(checksum_address(public_key_to_address(public_key)))
+    }
+
+    pub fn validate_peer_update(&self, peer_update: State, peer_signature: Bytes) -> Result<Status,  &'static str> {
+        peer_update.validate_signature(peer_signature)?;
+        self.require_valid_protocol_transition(peer_update)
+    }
+
+    fn validate_signature(&self, signature: Bytes) -> Result<(),  &'static str> {
+        let signer_index = ((self.turn_num.0 -1) % self.channel.participants.len() as u64) as usize;
+        let signer_address = self.channel.participants[signer_index];
+        let recovered_address = self.recover_address(signature)?;
+
+        if recovered_address.eq(&checksum_address(signer_address.0.to_vec())) {
+            Ok(())
+        } else {
+            Err("Signature verification failed")
+        }
     }
 
     fn _require_extra_implicit_checks(&self, to_state: &State) -> Result<(), &'static str> {
@@ -213,7 +231,7 @@ impl State {
         }
     }
 
-    pub fn require_valid_protocol_transition(self, to_state: State) -> Result<Status, &'static str> {
+    pub fn require_valid_protocol_transition(&self, to_state: State) -> Result<Status, &'static str> {
         self._require_extra_implicit_checks(&to_state)?;
 
         if to_state.is_final {
@@ -284,6 +302,5 @@ impl RecoverableSignature {
 #[serde(rename_all = "camelCase")]
 pub struct StateSignature {
     hash: Bytes32,
-    //#[serde(serialize_with = "serialize_signature")]
     signature: RecoverableSignature,
 }

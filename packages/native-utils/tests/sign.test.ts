@@ -143,10 +143,29 @@ describe('Sign state', () => {
     expect(native.validatePeerUpdate(currentState, peerState, nativeSigned2.signature)).toEqual("NeedToCheckApp")
     expect(wasm.validatePeerUpdate(currentState, peerState, nativeSigned2.signature)).toEqual("NeedToCheckApp")
 
-    // Singed by wrong signature
+    // Signer mismatch
     const nativeSigned3 = native.signState(peerState, PRIVATE_KEY1);
     expect(() => native.validatePeerUpdate(currentState, peerState, nativeSigned3.signature)).toThrow('Signature verification failed');
     expect(() => wasm.validatePeerUpdate(currentState, peerState, nativeSigned3.signature)).toThrow('Signature verification failed');
+
+    // turn number
+    currentState.turnNum = 2;
+    peerState.turnNum = 4;
+    const nativeSigned4 = native.signState(peerState, PRIVATE_KEY2);
+    expect(() => native.validatePeerUpdate(currentState, peerState, nativeSigned4.signature)).toThrow('turnNum must increment by one');
+    expect(() => wasm.validatePeerUpdate(currentState, peerState, nativeSigned4.signature)).toThrow('turnNum must increment by one');
+
+    // Nonce
+    currentState.turnNum = 3;
+    peerState.turnNum = 4;
+    peerState.channel = {
+      chainId: '1',
+      channelNonce: 2,
+      participants: ['0x63FaC9201494f0bd17B9892B9fae4d52fe3BD377', '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1'],
+    }
+    const nativeSigned5 = native.signState(peerState, PRIVATE_KEY2);
+
+    expect(() => native.validatePeerUpdate(currentState, peerState, nativeSigned5.signature)).toThrow('channelNonce must not change');
   })
 
 

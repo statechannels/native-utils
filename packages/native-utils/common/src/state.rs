@@ -236,7 +236,7 @@ impl State {
 
         if to_state.is_final {
             if self.outcome != to_state.outcome {
-                Err("Outcome change verboten")
+                Err("Outcome change forbidden")
             } else {
                 Ok(Status::True)
             }
@@ -246,7 +246,7 @@ impl State {
             } else {
                 if to_state.turn_num < Uint48(2 * to_state.channel.participants.len() as u64) {
                     if self.outcome != to_state.outcome {
-                        Err("Outcome change verboten")
+                        Err("Outcome change forbidden")
                     } else if self.app_data != to_state.app_data {
                         Err("appData change forbidden")
                     }
@@ -260,22 +260,6 @@ impl State {
             }
         }
     }
-}
-
-pub fn verify_sig(hash: Bytes32, address: String, signature: Bytes) -> Result<bool, &'static str> {
-
-    let hashed_message = hash_message(&hash);
-    let message = Message::parse(&hashed_message);
-    let parsed_signature = Signature::parse_slice(&signature[0..signature.len() - 1])
-        .or_else(|_| Err("invalid signature length"))?;
-    let recovery_id = RecoveryId::parse_rpc(signature[signature.len() - 1])
-        .or_else(|_| Err("invalid recovery ID"))?;
-    let public_key = recover(&message, &parsed_signature, &recovery_id)
-        .or_else(|_| Err("invalid signature"))?;
-
-    let recovered_address = checksum_address(public_key_to_address(public_key));
-
-    Ok(recovered_address.eq(&address))
 }
 
 pub struct RecoverableSignature(pub Signature, pub RecoveryId);

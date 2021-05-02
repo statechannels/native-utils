@@ -242,7 +242,7 @@ impl State {
             }
         } else {
             if self.is_final {
-                Err("isFinal retrograde")
+                Err("transition from a final state to a non-final state")
             } else {
                 if to_state.turn_num < Uint48(2 * to_state.channel.participants.len() as u64) {
                     if self.outcome != to_state.outcome {

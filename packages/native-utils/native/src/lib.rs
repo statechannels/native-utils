@@ -37,4 +37,8 @@ export! {
   fn recoverAddress(state: State, signature: Bytes) -> Result<String, &'static str> {
     state.recover_address(signature)
   }
+
+  fn validatePeerUpdate(state: State, peer_update: State, peer_signature: Bytes) -> Result<Status, &'static str> {
+    state.validate_peer_update(peer_update, peer_signature)
+  }
 }

@@ -1,4 +1,4 @@
-import { Channel, State } from '@statechannels/nitro-protocol'
+import { Bytes32, Channel, State } from '@statechannels/nitro-protocol'
 
 /**
  * A Nitro state with its state hash and signature from signing the state.
@@ -79,3 +79,20 @@ export function signState(state: State, privateKey: string): StateWithHashAndSig
  * @param signature A signature resulting from a previous call to `signState`.
  */
 export function recoverAddress(state: State, signature: string): string
+
+/**
+ * Verifies a signature.
+ *
+ * @param state A Nitro state.
+ * @param signature A signature resulting from a previous call to `signState`.
+ */
+ export function verifySignature(hash: Bytes32, address: string, signature: string): boolean
+
+ /**
+ * Validate peer update.
+ *
+ * @param state A Nitro state.
+ * @param peer_update Next state suggested by peer
+ * @param signature Peer's signature for next state.
+ */
+  export function validatePeerUpdate(state, peer_update, signature): string

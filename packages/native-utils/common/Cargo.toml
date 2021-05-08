@@ -9,7 +9,7 @@ authors = ["Jannis Pohlmann <jannis@thegraph.com>"]
 ethereum-types = "0.9"
 ethabi = { git = "https://github.com/graphprotocol/ethabi", rev = "fe7cab5" }
 hex = "0.4"
-libsecp256k1 = "0.3"
+libsecp256k1 = "0.3.5"
 serde_derive = "1.0"
 serde = "1.0"
 tiny-keccak = "2.0"

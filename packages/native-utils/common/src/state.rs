@@ -6,12 +6,12 @@ use secp256k1::{recover, sign, Message, RecoveryId, SecretKey, Signature};
 use serde_derive::*;
 
 use super::encode::*;
-use super::serde::*;
 use super::tokenize::*;
 use super::types::*;
 use super::utils::*;
+use super::channel::*;
 
-#[derive(Deserialize)]
+#[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationItem {
     pub destination: Bytes32,
@@ -39,7 +39,7 @@ impl Tokenize for AssetOutcomeType {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationAssetOutcome {
     pub asset_holder_address: Address,
@@ -55,7 +55,7 @@ impl Tokenize for AllocationAssetOutcome {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Guarantee {
     pub target_channel_id: Bytes32,
@@ -71,7 +71,7 @@ impl Tokenize for Guarantee {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct GuaranteeAssetOutcome {
     pub asset_holder_address: Address,
@@ -87,7 +87,7 @@ impl Tokenize for GuaranteeAssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum AssetOutcome {
     AllocationAssetOutcome(AllocationAssetOutcome),
@@ -107,7 +107,7 @@ impl Tokenize for AssetOutcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, PartialEq)]
 #[serde(transparent)]
 pub struct Outcome(Vec<AssetOutcome>);
 
@@ -125,34 +125,6 @@ impl Tokenize for Outcome {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Channel {
-    pub chain_id: Uint256,
-    pub channel_nonce: Uint256,
-    pub participants: Vec<Address>,
-}
-
-impl Channel {
-    pub fn id(&self) -> Bytes32 {
-        keccak256(
-            encode(&[
-                self.chain_id.tokenize(),
-                Token::Array(
-                    self.participants
-                        .iter()
-                        .cloned()
-                        .map(Token::Address)
-                        .collect(),
-                ),
-                self.channel_nonce.tokenize(),
-            ])
-            .as_slice(),
-        )
-        .into()
-    }
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct State {
     pub turn_num: Uint48,
     pub is_final: bool,
@@ -161,6 +133,12 @@ pub struct State {
     pub outcome: Outcome,
     pub app_definition: Address,
     pub app_data: Bytes,
+}
+
+#[derive(Serialize)]
+pub enum Status {
+    True,
+    NeedToCheckApp,
 }
 
 impl State {
@@ -202,11 +180,11 @@ impl State {
 
         Ok(StateSignature {
             hash,
-            signature: (signature, recovery_id),
+            signature: RecoverableSignature(signature, recovery_id),
         })
     }
 
-    pub fn recover_address(self, signature: Bytes) -> Result<String, &'static str> {
+    pub fn recover_address(&self, signature: Bytes) -> Result<String, &'static str> {
         let hash = self.hash();
         let hashed_message = hash_message(&hash);
         let message = Message::parse(&hashed_message);
@@ -219,12 +197,94 @@ impl State {
 
         Ok(checksum_address(public_key_to_address(public_key)))
     }
+
+    pub fn validate_peer_update(&self, peer_update: State, peer_signature: Bytes) -> Result<Status,  &'static str> {
+        peer_update.validate_signature(peer_signature)?;
+        self.require_valid_protocol_transition(peer_update)
+    }
+
+    fn validate_signature(&self, signature: Bytes) -> Result<(),  &'static str> {
+        let signer_index = ((self.turn_num.0 -1) % self.channel.participants.len() as u64) as usize;
+        let signer_address = self.channel.participants[signer_index];
+        let recovered_address = self.recover_address(signature)?;
+
+        if recovered_address.eq(&checksum_address(signer_address.0.to_vec())) {
+            Ok(())
+        } else {
+            Err("Signature verification failed")
+        }
+    }
+
+    fn _require_extra_implicit_checks(&self, to_state: &State) -> Result<(), &'static str> {
+        if &self.turn_num.0 + 1 != to_state.turn_num.0 {
+            Err("turnNum must increment by one")
+        } else if self.channel.chain_id != to_state.channel.chain_id {
+            Err("chainId must not change")
+        } else if self.channel.channel_nonce != to_state.channel.channel_nonce {
+            Err("channelNonce must not change")
+        } else if self.app_definition != to_state.app_definition {
+            Err("appDefinition must not change")
+        } else if self.challenge_duration != to_state.challenge_duration {
+            Err("challengeDuration must not change")
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn require_valid_protocol_transition(&self, to_state: State) -> Result<Status, &'static str> {
+        self._require_extra_implicit_checks(&to_state)?;
+
+        if to_state.is_final {
+            if self.outcome != to_state.outcome {
+                Err("Outcome change forbidden")
+            } else {
+                Ok(Status::True)
+            }
+        } else {
+            if self.is_final {
+                Err("transition from a final state to a non-final state")
+            } else {
+                if to_state.turn_num < Uint48(2 * to_state.channel.participants.len() as u64) {
+                    if self.outcome != to_state.outcome {
+                        Err("Outcome change forbidden")
+                    } else if self.app_data != to_state.app_data {
+                        Err("appData change forbidden")
+                    }
+                    else {
+                        Ok(Status::True)
+                    }
+                }
+                else {
+                    Ok(Status::NeedToCheckApp)
+                }
+            }
+        }
+    }
+}
+
+pub struct RecoverableSignature(pub Signature, pub RecoveryId);
+
+impl RecoverableSignature {
+    pub fn as_bytes(self) -> Bytes {
+        let mut v = self.0.serialize().to_vec();
+        v.push(self.1.serialize());
+        Bytes(v)
+    }
+
+    pub fn from_bytes(bytes: Bytes) -> Result<RecoverableSignature,  &'static str> {
+        assert_eq!(65,bytes.0.len());
+        let mut a: [u8; 64] = [0; 64];
+        a.copy_from_slice(&bytes.0[0..64]);
+        Ok(RecoverableSignature(
+            Signature::parse(&a),
+            RecoveryId::parse(bytes.0[64] - 27).map_err(|_| "Invalid recovery ID")?
+        ))
+    }
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StateSignature {
     hash: Bytes32,
-    #[serde(serialize_with = "serialize_signature")]
-    signature: (Signature, RecoveryId),
+    signature: RecoverableSignature,
 }

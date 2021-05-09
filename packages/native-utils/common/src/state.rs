@@ -11,7 +11,7 @@ use super::types::*;
 use super::utils::*;
 use super::channel::*;
 
-#[derive(Deserialize,PartialEq)]
+#[derive(Deserialize,Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationItem {
     pub destination: Bytes32,
@@ -39,7 +39,7 @@ impl Tokenize for AssetOutcomeType {
     }
 }
 
-#[derive(Deserialize,PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationAssetOutcome {
     pub asset_holder_address: Address,
@@ -71,7 +71,7 @@ impl Tokenize for Guarantee {
     }
 }
 
-#[derive(Deserialize,PartialEq)]
+#[derive(Deserialize,Serialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct GuaranteeAssetOutcome {
     pub asset_holder_address: Address,
@@ -87,7 +87,7 @@ impl Tokenize for GuaranteeAssetOutcome {
     }
 }
 
-#[derive(Deserialize, PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq)]
 #[serde(untagged)]
 pub enum AssetOutcome {
     AllocationAssetOutcome(AllocationAssetOutcome),
@@ -107,7 +107,7 @@ impl Tokenize for AssetOutcome {
     }
 }
 
-#[derive(Deserialize, PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq)]
 #[serde(transparent)]
 pub struct Outcome(Vec<AssetOutcome>);
 
@@ -123,7 +123,7 @@ impl Tokenize for Outcome {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct State {
     pub turn_num: Uint48,

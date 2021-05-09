@@ -6,6 +6,7 @@ use std::str::FromStr;
 use ethereum_types::U256;
 use serde::de::{Error as SerdeError, *};
 use serde::ser::*;
+use serde_derive::*;
 
 use super::tokenize::*;
 
@@ -121,13 +122,25 @@ impl<'de> Deserialize<'de> for Uint48 {
     }
 }
 
+impl Serialize for Uint48 {
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+    S: Serializer,
+    {
+        serializer.serialize_u64(self.0)
+    }
+}
+
 impl Tokenize for Uint48 {
     fn tokenize(&self) -> Token {
         Token::Uint(self.0.into())
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Serialize)]
 pub struct Uint256(pub U256);
 
 impl From<U256> for Uint256 {

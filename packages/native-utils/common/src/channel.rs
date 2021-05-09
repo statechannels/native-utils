@@ -18,7 +18,7 @@ pub struct SignedStateVarsWithHash {
     pub signature: RecoverableSignature
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Channel {
     pub chain_id: Uint256,

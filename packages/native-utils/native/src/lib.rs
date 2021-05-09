@@ -41,4 +41,8 @@ export! {
   fn validatePeerUpdate(state: State, peer_update: State, peer_signature: Bytes) -> Result<Status, &'static str> {
     state.validate_peer_update(peer_update, peer_signature)
   }
+
+  fn getMyState(last_state: State) -> Result<State, &'static str> {
+    Ok(last_state)
+  }
 }

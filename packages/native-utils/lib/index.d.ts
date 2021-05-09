@@ -96,3 +96,10 @@ export function recoverAddress(state: State, signature: string): string
  * @param signature Peer's signature for next state.
  */
   export function validatePeerUpdate(state, peer_update, signature): string
+
+   /**
+ * Get My state from last state.
+ *
+ * @param last_state A Nitro state.
+ */
+  export function getMyState(last_state): State

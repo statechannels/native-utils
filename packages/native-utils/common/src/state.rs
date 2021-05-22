@@ -11,7 +11,7 @@ use super::types::*;
 use super::utils::*;
 use super::channel::*;
 
-#[derive(Deserialize,Serialize, PartialEq)]
+#[derive(Deserialize,Serialize,PartialEq,Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationItem {
     pub destination: Bytes32,
@@ -39,7 +39,7 @@ impl Tokenize for AssetOutcomeType {
     }
 }
 
-#[derive(Deserialize, Serialize, PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationAssetOutcome {
     pub asset_holder_address: Address,
@@ -55,7 +55,7 @@ impl Tokenize for AllocationAssetOutcome {
     }
 }
 
-#[derive(Deserialize, Serialize, PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq,Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Guarantee {
     pub target_channel_id: Bytes32,
@@ -71,7 +71,7 @@ impl Tokenize for Guarantee {
     }
 }
 
-#[derive(Deserialize,Serialize,PartialEq)]
+#[derive(Deserialize,Serialize,PartialEq,Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct GuaranteeAssetOutcome {
     pub asset_holder_address: Address,
@@ -87,7 +87,7 @@ impl Tokenize for GuaranteeAssetOutcome {
     }
 }
 
-#[derive(Deserialize, Serialize, PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq, Clone)]
 #[serde(untagged)]
 pub enum AssetOutcome {
     AllocationAssetOutcome(AllocationAssetOutcome),
@@ -107,7 +107,7 @@ impl Tokenize for AssetOutcome {
     }
 }
 
-#[derive(Deserialize, Serialize, PartialEq)]
+#[derive(Deserialize, Serialize, PartialEq, Clone)]
 #[serde(transparent)]
 pub struct Outcome(Vec<AssetOutcome>);
 
@@ -123,7 +123,7 @@ impl Tokenize for Outcome {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct State {
     pub turn_num: Uint48,
@@ -212,6 +212,18 @@ impl State {
             Ok(())
         } else {
             Err("Signature verification failed")
+        }
+    }
+
+    pub fn compute_next_state(self, app_data: Bytes, outcome: Outcome) -> Result<State, &'static str> {
+        if self.turn_num.0 < 3 {
+            Err("State not in running stage")
+        } else {
+            let mut next_state = self.clone();
+            next_state.turn_num.0 = self.turn_num.0 + 1;
+            next_state.app_data = app_data.clone();
+            next_state.outcome = outcome.clone();
+            Ok(next_state)
         }
     }
 

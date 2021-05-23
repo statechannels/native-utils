@@ -25,6 +25,9 @@ extern "C" {
 
     #[wasm_bindgen(typescript_type = "StateSignature")]
     pub type JsStateSignature;
+
+    #[wasm_bindgen(typescript_type = "Outcome")]
+    pub type JsOutcome;
 }
 
 #[wasm_bindgen(js_name = "getChannelId")]
@@ -87,5 +90,14 @@ pub fn validate_peer_update(state: &JsState, peer_update: &JsState, signature: &
     let peer_update: State = peer_update.into_serde().unwrap();
     let signature: Bytes = signature.into_serde().unwrap();
     let result = state.validate_peer_update(peer_update, signature).map_err(JsValue::from)?;
+    Ok(JsValue::from_serde(&result).unwrap().into())
+}
+
+#[wasm_bindgen(js_name = "computeNextState")]
+pub fn compute_next_state(state: &JsState, app_data: &JsString, outcome: &JsOutcome) -> Result<JsString, JsValue> {
+    let state: State = state.into_serde().unwrap();
+    let app_data: Bytes = app_data.into_serde().unwrap();
+    let outcome: Outcome = outcome.into_serde().unwrap();
+    let result = state.compute_next_state(app_data, outcome).map_err(JsValue::from)?;
     Ok(JsValue::from_serde(&result).unwrap().into())
 }

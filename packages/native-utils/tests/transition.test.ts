@@ -195,8 +195,11 @@ describe('Validate state transitions', () => {
     currentState.turnNum = 5;
 
     let nextState = native.computeNextState(currentState,APPDATA, OUTCOME)
+    let wasmNextState = wasm.computeNextState(currentState,APPDATA, OUTCOME)
 
     expect(Number(nextState.channel.chainId)).toEqual(Number(currentState.channel.chainId));
     expect(nextState.appData).toEqual(APPDATA);
+    expect(Number(wasmNextState.channel.chainId)).toEqual(Number(currentState.channel.chainId));
+    expect(wasmNextState.appData).toEqual(APPDATA);
   })
 })

@@ -42,7 +42,7 @@ export! {
     state.validate_peer_update(peer_update, peer_signature)
   }
 
-  fn getMyState(last_state: State) -> Result<State, &'static str> {
-    Ok(last_state)
+  fn computeNextState(last_state: State, app_data: Bytes, outcome: Outcome) -> Result<State, &'static str> {
+    last_state.compute_next_state(app_data, outcome)
   }
 }

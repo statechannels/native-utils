@@ -215,14 +215,16 @@ impl State {
         }
     }
 
-    pub fn compute_next_state(self, app_data: Bytes, outcome: Outcome) -> Result<State, &'static str> {
+    pub fn compute_next_state(&self, app_data: Bytes, outcome: Outcome) -> Result<State, &'static str> {
         if self.turn_num.0 < 3 {
             Err("State not in running stage")
         } else {
             let mut next_state = self.clone();
             next_state.turn_num.0 = self.turn_num.0 + 1;
             next_state.app_data = app_data.clone();
-            next_state.outcome = outcome.clone();
+            if !self.is_final {
+                next_state.outcome = outcome.clone();
+            }
             Ok(next_state)
         }
     }

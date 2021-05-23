@@ -12,7 +12,7 @@ const {
   recoverAddress,
   verifySignature,
   validatePeerUpdate,
-  getMyState,
+  computeNextState,
 } = require('../native/index.node')
 
 function unwrapResult({ Ok, Err }) {
@@ -48,5 +48,5 @@ module.exports = {
 
   validatePeerUpdate: (state, peer_update, signature) => unwrapResult(validatePeerUpdate(state, peer_update, signature)),
 
-  getMyState: (last_state) => unwrapResult(getMyState(last_state)),
+  computeNextState: (last_state, app_data, outcome) => unwrapResult(computeNextState(last_state, app_data, outcome)),
 }

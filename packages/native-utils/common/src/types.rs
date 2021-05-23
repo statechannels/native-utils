@@ -6,6 +6,7 @@ use std::str::FromStr;
 use ethereum_types::U256;
 use serde::de::{Error as SerdeError, *};
 use serde::ser::*;
+use serde_derive::*;
 
 use super::tokenize::*;
 
@@ -19,7 +20,7 @@ impl ToHexString for Vec<u8> {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Bytes(pub Vec<u8>);
 
 impl Deref for Bytes {
@@ -56,7 +57,7 @@ impl Tokenize for Bytes {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq,Clone)]
 pub struct Bytes32(Vec<u8>);
 
 impl From<[u8; 32]> for Bytes32 {
@@ -109,7 +110,7 @@ impl Tokenize for Bytes32 {
     }
 }
 
-#[derive(PartialEq, PartialOrd)]
+#[derive(PartialEq, PartialOrd, Clone)]
 pub struct Uint48(pub u64);
 
 impl<'de> Deserialize<'de> for Uint48 {
@@ -121,13 +122,25 @@ impl<'de> Deserialize<'de> for Uint48 {
     }
 }
 
+impl Serialize for Uint48 {
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+    S: Serializer,
+    {
+        serializer.serialize_u64(self.0)
+    }
+}
+
 impl Tokenize for Uint48 {
     fn tokenize(&self) -> Token {
         Token::Uint(self.0.into())
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Serialize, Clone)]
 pub struct Uint256(pub U256);
 
 impl From<U256> for Uint256 {

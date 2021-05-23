@@ -1,4 +1,4 @@
-import { Bytes32, Channel, State } from '@statechannels/nitro-protocol'
+import { Bytes32, Channel, Outcome, State } from '@statechannels/nitro-protocol'
 
 /**
  * A Nitro state with its state hash and signature from signing the state.
@@ -96,3 +96,12 @@ export function recoverAddress(state: State, signature: string): string
  * @param signature Peer's signature for next state.
  */
   export function validatePeerUpdate(state, peer_update, signature): string
+
+   /**
+ * Get My state from last state.
+ *
+ * @param last_state A Nitro state.
+ * @param app_data App data
+ * @param outcome Outcome
+ */
+  export function computeNextState(last_state: State, app_data: String, outcome: Outcome): State

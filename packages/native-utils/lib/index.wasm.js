@@ -11,7 +11,8 @@ const {
   signState,
   recoverAddress,
   verifySignature,
-  validatePeerUpdate,  
+  validatePeerUpdate,
+  computeNextState,
 } = require('@statechannels/wasm-utils')
 
 module.exports = {
@@ -36,4 +37,5 @@ module.exports = {
   recoverAddress,
   verifySignature,
   validatePeerUpdate,
+  computeNextState,
 }

@@ -169,4 +169,37 @@ describe('Validate state transitions', () => {
     expect(() => native.validatePeerUpdate(currentState, peerState, nativeSigned.signature)).toThrow('Outcome change forbidden');
     expect(() => wasm.validatePeerUpdate(currentState, peerState, nativeSigned.signature)).toThrow('Outcome change forbidden');
   })
+
+  test('Compute next state', async () => {
+    const otheroutcome = [
+      {
+        assetHolderAddress: '0x0000000000000000000000000000000000000000',
+        guarantee: {
+          targetChannelId:
+            '0x0000000000000000000000000000000000000000000000000000000000000000',
+          destinations: [
+            '0x0000000000000000000000000000000000000000000000000000000000000000',
+            '0x2222222222222222222222222222222222222222222222220222222222222222',
+          ],
+        },
+      },
+    ]
+
+    let currentState = {
+      ...CURRENT_STATE,
+    }
+
+    const APPDATA = '0x0000000000000000000000000000000000000000000000000000000000000001'
+
+    currentState.isFinal = false
+    currentState.turnNum = 5;
+
+    let nextState = native.computeNextState(currentState,APPDATA, OUTCOME)
+    let wasmNextState = wasm.computeNextState(currentState,APPDATA, OUTCOME)
+
+    expect(Number(nextState.channel.chainId)).toEqual(Number(currentState.channel.chainId));
+    expect(nextState.appData).toEqual(APPDATA);
+    expect(Number(wasmNextState.channel.chainId)).toEqual(Number(currentState.channel.chainId));
+    expect(wasmNextState.appData).toEqual(APPDATA);
+  })
 })

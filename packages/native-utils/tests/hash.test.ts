@@ -129,7 +129,7 @@ describe('encodeOutcome', () => {
       ...DEFAULT_STATE,
       outcome: [
         {
-          assetHolderAddress: '0x0000000000000000000000000000000000000000',
+          asset: '0x0000000000000000000000000000000000000000',
           allocationItems: [
             {
               destination:
@@ -149,7 +149,7 @@ describe('encodeOutcome', () => {
       ...DEFAULT_STATE,
       outcome: [
         {
-          assetHolderAddress: '0x0000000000000000000000000000000000000000',
+          asset: '0x0000000000000000000000000000000000000000',
           allocationItems: [
             {
               destination:
@@ -174,7 +174,7 @@ describe('encodeOutcome', () => {
       ...DEFAULT_STATE,
       outcome: [
         {
-          assetHolderAddress: '0x0000000000000000000000000000000000000000',
+          asset: '0x0000000000000000000000000000000000000000',
           guarantee: {
             targetChannelId:
               '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -203,7 +203,7 @@ describe('hashOutcome', () => {
       ...DEFAULT_STATE,
       outcome: [
         {
-          assetHolderAddress: '0x0000000000000000000000000000000000000000',
+          asset: '0x0000000000000000000000000000000000000000',
           allocationItems: [
             {
               destination:
@@ -223,7 +223,7 @@ describe('hashOutcome', () => {
       ...DEFAULT_STATE,
       outcome: [
         {
-          assetHolderAddress: '0x0000000000000000000000000000000000000000',
+          asset: '0x0000000000000000000000000000000000000000',
           allocationItems: [
             {
               destination:

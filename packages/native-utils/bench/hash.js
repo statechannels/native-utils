@@ -14,7 +14,7 @@ const DEFAULT_STATE = {
   challengeDuration: 1,
   outcome: [
     {
-      assetHolderAddress: '0x0000000000000000000000000000000000000000',
+      asset: '0x0000000000000000000000000000000000000000',
       allocationItems: [
         {
           destination:

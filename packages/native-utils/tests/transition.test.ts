@@ -4,7 +4,7 @@ import * as native from '..'
 
 const OUTCOME = [
   {
-    assetHolderAddress: '0x0000000000000000000000000000000000000000',
+    asset: '0x0000000000000000000000000000000000000000',
     guarantee: {
       targetChannelId:
         '0x0000000000000000000000000000000000000000000000000000000000000000',
@@ -137,7 +137,7 @@ describe('Validate state transitions', () => {
   test('Outcome mismatch mismatch fails', async () => {
     const otheroutcome = [
       {
-        assetHolderAddress: '0x0000000000000000000000000000000000000000',
+        asset: '0x0000000000000000000000000000000000000000',
         guarantee: {
           targetChannelId:
             '0x0000000000000000000000000000000000000000000000000000000000000000',

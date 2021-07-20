@@ -42,7 +42,7 @@ impl Tokenize for AssetOutcomeType {
 #[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AllocationAssetOutcome {
-    pub asset_holder_address: Address,
+    pub asset: Address,
     pub allocation_items: Vec<AllocationItem>,
 }
 
@@ -74,7 +74,7 @@ impl Tokenize for Guarantee {
 #[derive(Deserialize,PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct GuaranteeAssetOutcome {
-    pub asset_holder_address: Address,
+    pub asset: Address,
     pub guarantee: Guarantee,
 }
 
@@ -96,12 +96,12 @@ pub enum AssetOutcome {
 
 impl Tokenize for AssetOutcome {
     fn tokenize(&self) -> Token {
-        let (asset_holder_address, encoded) = match self {
-            Self::AllocationAssetOutcome(o) => (o.asset_holder_address, o.encode()),
-            Self::GuaranteeAssetOutcome(o) => (o.asset_holder_address, o.encode()),
+        let (asset, encoded) = match self {
+            Self::AllocationAssetOutcome(o) => (o.asset, o.encode()),
+            Self::GuaranteeAssetOutcome(o) => (o.asset, o.encode()),
         };
         Token::Tuple(vec![
-            asset_holder_address.tokenize(),
+            asset.tokenize(),
             Bytes(encoded).tokenize(),
         ])
     }

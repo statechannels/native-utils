@@ -39,7 +39,7 @@ describe('Sign state', () => {
   test('State with asset allocation outcome', async () => {
     const outcome = [
       {
-        assetHolderAddress: '0x0000000000000000000000000000000000000000',
+        asset: '0x0000000000000000000000000000000000000000',
         allocationItems: [
           {
             destination:
@@ -71,7 +71,7 @@ describe('Sign state', () => {
   test('State with guarantee outcome', async () => {
     const outcome = [
       {
-        assetHolderAddress: '0x0000000000000000000000000000000000000000',
+        asset: '0x0000000000000000000000000000000000000000',
         guarantee: {
           targetChannelId:
             '0x0000000000000000000000000000000000000000000000000000000000000000',

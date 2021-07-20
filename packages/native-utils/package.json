@@ -2,11 +2,11 @@
   "name": "@statechannels/native-utils",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "version": "0.1.6",
+  "version": "0.1.6-asset",
   "author": "Jannis Pohlmann <jannis@thegraph.com>",
   "license": "MIT",
   "dependencies": {
-    "@statechannels/wasm-utils": "^0.1.6",
+    "@statechannels/wasm-utils": "^0.1.6-asset",
     "lodash": "^4.17.20"
   },
   "scripts": {
